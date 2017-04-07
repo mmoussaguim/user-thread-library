@@ -1,0 +1,11 @@
+Penser à empecher de pouvori faire deux join sur un meme thread
+
+Ce qui sera demandé (7/4/17):
+* Makefile qui compile sans warning en utilisant notre librairie ou pthread
+* make check pour exécuter tous les tests fournis et vérifier leur validité.
+Avec vérification de la non-présence d'erreurs sous Valgrind. 
+* README pour utiliser nos sources
+*Complexité des différentes fonctions et choix effectués
+
+Études des perfomances :
+Comparaison des couts en temps et en mémoire par rapport à pthread
