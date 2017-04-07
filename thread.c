@@ -13,29 +13,25 @@ typedef struct{
 /**************************************************/
 /***************** LES GLOBALES *******************/
 /**************************************************/
+//Identifiant de référence pour les nouveaux threads
+int id_ref = 0;
 
 //File d'attente de threads prêts
 STAILQ_HEAD(ma_fifo, QueueElt) runqueue;
 int queue_is_init = 0;			    
-int id_ref = 0;
 
 //Pointeur du thread en exécution
-Thread current_thread;
+Thread current_thread; // à initialiser ?
 thread_t running_thread = &current_thread;
 			    
 /**************************************************/
 /***************** LES FONCTIONS ******************/
 /**************************************************/
 
-/* recuperer l'identifiant du thread courant.
- */
 extern thread_t thread_self(void){
   return running_thread;
 }
 
-/* creer un nouveau thread qui va exécuter la fonction func avec l'argument funcarg.
- * renvoie 0 en cas de succès, -1 en cas d'erreur.
- */
 extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg){
   //Préparer le contexte
   ucontext_t uc;
@@ -64,11 +60,20 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   return 0;
 }
 
-/* passer la main à un autre thread.
- */
 extern int thread_yield(void){
-  // Le thread courant passe en ready alors qu'il est sensé etre running
-  // Passer le prochain thread de la FIFO ready en running
+  // Le thread courant va dans la runqueue 
+  QueueElt *run_elt = malloc(sizeof(QueueElt));
+  run_elt->thread = thread_self();
+  STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
+  
+  // Si l'ajout ne s'est pas bien passé, quitter
+  if(STAILQ_EMPTY(&runqueue))
+    return 1;
+  // Passer le premier thread de la runqueue en running
+  run_elt = STAILQ_FIRST(&runqueue);
+  STAILQ_REMOVE_HEAD(&runqueue, next); //ERREUR type incomplet
+  running_thread = run_elt->thread;
+  free(run_elt);
   return 0;
 }
 
@@ -77,7 +82,7 @@ extern int thread_yield(void){
  * si retval est NULL, la valeur de retour est ignorée.
  */
 extern int thread_join(thread_t thread, void **retval){
-  //le thread courrant est passé en father de 'thread', et quitte l'état running
+  //le thread courant est passé en father de 'thread', et quitte l'état running
   //run le premier de la fifo
   return 0;
 }
