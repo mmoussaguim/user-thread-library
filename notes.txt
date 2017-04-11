@@ -1,4 +1,8 @@
-Penser à empecher de pouvori faire deux join sur un meme thread
+Sharelatex : thread@gmail.com 
+mdp : os
+
+
+Penser à empecher de pouvoir faire deux join sur un meme thread
 
 Ce qui sera demandé (7/4/17):
 * Makefile qui compile sans warning en utilisant notre librairie ou pthread
