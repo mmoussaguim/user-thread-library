@@ -5,7 +5,9 @@
 
 #define STACK_SIZE 1024
 
-typedef struct{
+
+
+typedef struct QueueElt{
   Thread *thread;
   STAILQ_ENTRY(QueueElt) next; 
 }QueueElt;
@@ -18,12 +20,12 @@ int id_ref = 0;
 
 //File d'attente de threads prêts
 STAILQ_HEAD(ma_fifo, QueueElt) runqueue;
-int queue_is_init = 0;			    
+			       int queue_is_init = 0;			    
 
 //Pointeur du thread en exécution
 Thread current_thread; // à initialiser ?
 thread_t running_thread = &current_thread;
-			    
+
 /**************************************************/
 /***************** LES FONCTIONS ******************/
 /**************************************************/
@@ -70,7 +72,7 @@ extern int thread_yield(void){
   if(STAILQ_EMPTY(&runqueue))
     return 1;
   // Passer le premier thread de la runqueue en running
-  run_elt = STAILQ_FIRST(&runqueue);
+  run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
   STAILQ_REMOVE_HEAD(&runqueue, next); //ERREUR type incomplet
   running_thread = run_elt->thread;
   free(run_elt);
@@ -84,6 +86,7 @@ extern int thread_yield(void){
 extern int thread_join(thread_t thread, void **retval){
   //le thread courant est passé en father de 'thread', et quitte l'état running
   //run le premier de la fifo
+  // Attention gérer le cas ou le htread a deja terminé
   return 0;
 }
 

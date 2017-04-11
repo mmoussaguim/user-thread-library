@@ -30,9 +30,9 @@ int main() {
   makecontext(&uc2, (void (*)(void)) func, 1, 22);
 
   printf("je suis dans le main\n");
-  //swapcontext(&previous, &uc2);
-  getcontext(&previous);
-  setcontext(&uc2);
+  swapcontext(&previous, &uc2);
+  //getcontext(&previous);
+  //setcontext(&uc2);
   printf("je suis revenu dans le main\n");
   
   // ?
