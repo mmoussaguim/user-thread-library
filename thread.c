@@ -108,9 +108,9 @@ extern void thread_exit(void *retval){
   //écrit dans retval avant de free
 	
 	Thread *father = current_thread.father;
-
-	kill(getpid(thread_self()),SIGKILL);	
-
+	
+	int k = kill(getpid(thread_self()),SIGKILL);	
+	retval = &k;
 	//mettre le father à la fin de la runqueue
 	QueueElt *run_elt = malloc(sizeof(QueueElt));
   	run_elt->thread = father;
