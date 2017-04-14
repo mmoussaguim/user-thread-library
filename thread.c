@@ -24,7 +24,7 @@ STAILQ_HEAD(ma_fifo, QueueElt) runqueue;
 
 //Pointeur du thread en exécution
 Thread current_thread; // à initialiser ?
-thread_t running_thread = &current_thread;
+Thread* running_thread = &current_thread;
 
 /**************************************************/
 /***************** LES FONCTIONS ******************/
@@ -63,6 +63,7 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
 }
 
 extern int thread_yield(void){
+  Thread * old_thread = running_thread;
   // Le thread courant va dans la runqueue 
   QueueElt *run_elt = malloc(sizeof(QueueElt));
   run_elt->thread = thread_self();
@@ -76,6 +77,11 @@ extern int thread_yield(void){
   STAILQ_REMOVE_HEAD(&runqueue, next); //ERREUR type incomplet
   running_thread = run_elt->thread;
   free(run_elt);
+
+  // Recuperer le contexte du nouveau thread courant
+  // Et stocker le contexte courrant dans l'ancien thread courant
+  swapcontext(&(old_thread->uc),&(running_thread->uc));
+  
   return 0;
 }
 
