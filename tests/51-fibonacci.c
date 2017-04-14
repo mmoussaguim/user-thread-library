@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "thread.h"
+#include "../thread.h"
 
 /* fibonacci.
  *

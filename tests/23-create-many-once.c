@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include "thread.h"
+#include "../thread.h"
 
 /* test de plein de create, puis plein de join quand ils ont tous fini
  *

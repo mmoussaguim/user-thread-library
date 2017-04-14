@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
-#include "thread.h"
+#include "../thread.h"
 
 /* test du join, avec ou sans thread_exit.
  *
