@@ -3,6 +3,9 @@ all: ex
 ex: thread.c example.c
 	gcc thread.c example.c -o Programme
 
+split:
+	gcc thread_split.c 
+
 test1:
 	gcc thread.c tests/01-main.c -o Test1
 test2:
@@ -30,4 +33,4 @@ clean :
 	rm -f *.o a.out
 	rm -f Programme
 	rm -f Test*
-
+	rm -f *~ *#
