@@ -4,6 +4,8 @@
 #include <sys/queue.h>
 #include <ucontext.h> /* ne compile pas avec -std=c89 ou -std=c99 */
 
+
+
 #define STACK_SIZE 1024
 
 
@@ -21,7 +23,11 @@ int id_ref = 0;
 
 //File d'attente de threads prêts
 STAILQ_HEAD(ma_fifo, QueueElt) runqueue;
-			       int queue_is_init = 0;			    
+			       //int runqueue_is_init = 0;
+
+//File d'attente de threads en attente d'un evt
+STAILQ_HEAD(ma_fifo2, QueueElt) waitqueue;
+				//int waitqueue_is_init = 0;
 
 //Pointeur du thread en exécution
 Thread current_thread; // à initialiser ?
@@ -54,10 +60,10 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   new_elt->thread = new_th;
   
   //L'ajouter à la runqueue
-  if(!queue_is_init){
+  /*if(!queue_is_init){
     STAILQ_INIT(&runqueue);
     queue_is_init = 1;
-  }
+    }*/
   STAILQ_INSERT_TAIL(&runqueue, new_elt, next);
   
   return 0;
@@ -96,8 +102,28 @@ extern int thread_join(thread_t thread, void **retval){
   //le thread courant est passé en father de 'thread', et quitte l'état running
   //run le premier de la fifo
   // Attention gérer le cas ou le htread a deja terminé
+
+
+  QueueElt *run_elt = malloc(sizeof(QueueElt));
+  QueueElt *new_elt = malloc(sizeof(QueueElt));
+
+  Thread* my_thread = thread;
+
+  run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
+  STAILQ_REMOVE_HEAD(&runqueue, next); 
+  STAILQ_INSERT_TAIL(&waitqueue, run_elt, next);
+
+  my_thread->father = run_elt->thread;
+
+  new_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
+  running_thread = new_elt->thread;
+
   return 0;
 }
+
+
+
+
 
 /* terminer le thread courant en renvoyant la valeur de retour retval.
  * cette fonction ne retourne jamais.
@@ -140,6 +166,6 @@ void init(void){
   STAILQ_INIT(&runqueue);
 
   //initialisation de la waitqueue
-  //STAILQ_INIT(&waitqueue);
+  STAILQ_INIT(&waitqueue);
 
 }
