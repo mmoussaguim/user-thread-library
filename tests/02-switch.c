@@ -42,11 +42,14 @@ int main()
   assert(!err);
   /* des switchs avec l'autre thread */
   for(i=0; i<20; i++) {
+    printf("--TEST-- self: %p\n",thread_self());
     printf("le main yield vers un fils\n");
     err = thread_yield();
     assert(!err);
   }
 
+  printf("--TEST-- end yields\n");
+  
   err = thread_join(th3, &res);
   assert(!err);
   assert(res == NULL);
