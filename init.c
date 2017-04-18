@@ -1,4 +1,5 @@
-void init(){
+void init(void){
+  printf("--TEST-- init()\n");
   //initialisation du thread courant
   running_thread = malloc(sizeof(struct Thread));
   running_thread->id = ID_FIRST_THREAD;

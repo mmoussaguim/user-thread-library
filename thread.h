@@ -10,9 +10,13 @@ typedef enum{
   suspend //suspendu par l'utilisateur
 } State;
 */
-typedef struct{
+typedef struct Thread{
   int id;
   ucontext_t uc;
   thread_t father;
   //State state;
 } Thread;
+
+
+
+void init(void) __attribute__((constructor));

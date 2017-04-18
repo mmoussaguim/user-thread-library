@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "thread.h"
 #include <sys/queue.h>
+#include <ucontext.h> /* ne compile pas avec -std=c89 ou -std=c99 */
 
 #define STACK_SIZE 1024
 
@@ -63,12 +64,14 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
 }
 
 extern int thread_yield(void){
+
   Thread * old_thread = running_thread;
   // Le thread courant va dans la runqueue 
   QueueElt *run_elt = malloc(sizeof(QueueElt));
   run_elt->thread = thread_self();
-  STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
-  
+
+  STAILQ_INSERT_TAIL(&runqueue, run_elt, next); 
+
   // Si l'ajout ne s'est pas bien passé, quitter
   if(STAILQ_EMPTY(&runqueue))
     return 1;
@@ -122,4 +125,21 @@ extern void thread_exit(void *retval){
 	STAILQ_REMOVE_HEAD(&runqueue, next); //ERREUR type incomplet
   	running_thread = run_elt->thread;
   	free(run_elt);
+	while(1){} // Pour eviter le warning: la fonction ne doit pas retourner
+}
+
+
+void init(void){
+  //initialisation du thread courant
+  running_thread = malloc(sizeof(struct Thread));
+  running_thread->id = id_ref++;//ID_FIRST_THREAD;
+  running_thread->father = NULL;
+  getcontext(&(running_thread->uc));
+
+  //initialisation de la runqueue
+  STAILQ_INIT(&runqueue);
+
+  //initialisation de la waitqueue
+  //STAILQ_INIT(&waitqueue);
+
 }
