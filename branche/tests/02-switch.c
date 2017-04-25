@@ -42,6 +42,9 @@ int main()
   err = thread_create(&th3, thfunc, "fils3");
   assert(!err);
 
+  if(!(th3 == NULL || ((Thread*)th3)->state == dead))
+    printf("lol\n");
+
   /* des switchs avec l'autre thread */
   /*//for(i=0; i<20; i++) {
     printf("le main yield vers un fils\n");

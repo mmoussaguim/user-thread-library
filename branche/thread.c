@@ -52,6 +52,7 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
     printf("--TEST-- Le thread a termine\n");
     if (running_thread->state != dead)
       thread_exit(NULL);
+    return NULL;
   }
 
   
@@ -69,9 +70,13 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   Thread *new_th = malloc(sizeof(Thread));
   new_th->id = id_ref++;
   new_th->uc = uc;
-  //new_th->father = NULL;
+  new_th->father = NULL;
   //new_th->father = running_thread;
   new_th->state = ready;
+
+int valgrind_stackid = VALGRIND_STACK_REGISTER(uc.uc_stack.ss_sp,
+                                               uc.uc_stack.ss_sp + uc.uc_stack.ss_size);
+ new_th->vlg_id = valgrind_stackid;
 
   //Créer un QueueElt
   QueueElt *new_elt = malloc(sizeof(QueueElt));
@@ -83,6 +88,7 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
     queue_is_init = 1;
     }*/
   STAILQ_INSERT_TAIL(&runqueue, new_elt, next);
+  *newthread = new_th;
   return 0;
 }
 
