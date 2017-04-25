@@ -38,6 +38,7 @@ Thread* running_thread = &current_thread;
 /**************************************************/
 
 extern thread_t thread_self(void){
+  printf("--TEST-- self\n");
   return running_thread;
 }
 
@@ -173,10 +174,15 @@ extern int thread_join(thread_t thread, void **retval){
   
   while(!(thread == NULL || ((Thread*)thread)->state == dead)){
     
-  
+    if( ((Thread *)thread)->father != NULL)
+      printf("TEST\n");
     
     printf("--TEST-- join debut: %p\n",thread);
-    thread->father = thread_self();
+    Thread * son = (Thread *)thread;
+    son->father = thread_self();
+    printf("--TEST-- join jusque la tout va bien\n");
+
+
     Thread * old_thread = running_thread;
     old_thread->state = blocked;
     //printf("--TEST-- running thread: %p\n",running_thread);
