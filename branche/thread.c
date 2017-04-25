@@ -38,7 +38,7 @@ Thread* running_thread = &current_thread;
 /**************************************************/
 
 extern thread_t thread_self(void){
-  printf("--TEST-- self\n");
+  //printf("--TEST-- self\n");
   return running_thread;
 }
 
@@ -186,7 +186,7 @@ extern int thread_join(thread_t thread, void **retval){
     printf("--TEST-- join debut: %p\n",thread);
     Thread * son = (Thread *)thread;
     son->father = thread_self();
-    printf("--TEST-- join jusque la tout va bien\n");
+    //printf("--TEST-- join jusque la tout va bien\n");
 
 
     Thread * old_thread = running_thread;
@@ -212,6 +212,8 @@ extern int thread_join(thread_t thread, void **retval){
     // Recuperer le contexte du nouveau thread courant
     // Et stocker le contexte courrant dans l'ancien thread courant
     //printf("--TEST-- %p %p\n",&(old_thread->uc),&(running_thread->uc));
+
+    //printf("contexte1: %p\n contecte2: %p\n",&(old_thread->uc),&(running_thread->uc));
 
     swapcontext(&(old_thread->uc),&(running_thread->uc)); // fait un segfault (probablement quand il ne reste qu'un seul processus
     printf("--TEST-- join2\n");    
@@ -251,15 +253,18 @@ extern void thread_exit(void *retval){
       run_elt->thread = father;
       STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
     }
-    //run le premier de la fifo
 
-    // ajouter test queue vide
+    //run le premier de la fifo
     if(!STAILQ_EMPTY(&runqueue)){
       run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
-      STAILQ_REMOVE_HEAD(&runqueue, next); //ERREUR type incomplet
+      STAILQ_REMOVE_HEAD(&runqueue, next);
       running_thread = run_elt->thread;
       free(run_elt);
+      //printf("--TEST-- %d\n",running_thread->id);
+      setcontext(&(running_thread->uc));
+      printf("--TEST-- exit ok\n");
     }
+    printf("--TEST-- exit fin\n");
   //while(1){} // Pour eviter le warning: la fonction ne doit pas retourner
 }
 
