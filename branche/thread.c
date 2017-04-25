@@ -69,7 +69,7 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   new_th->id = id_ref++;
   new_th->uc = uc;
   //new_th->father = NULL;
-  new_th->father = running_thread;
+  //new_th->father = running_thread;
   new_th->state = ready;
 
   //Créer un QueueElt
@@ -176,6 +176,7 @@ extern int thread_join(thread_t thread, void **retval){
   
     
     printf("--TEST-- join debut: %p\n",thread);
+    thread->father = thread_self();
     Thread * old_thread = running_thread;
     old_thread->state = blocked;
     //printf("--TEST-- running thread: %p\n",running_thread);
