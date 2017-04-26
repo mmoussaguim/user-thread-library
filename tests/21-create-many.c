@@ -7,7 +7,7 @@
  *
  * valgrind doit etre content.
  * la durée du programme doit etre proportionnelle au nombre de threads donnés en argument.
- * jusqu'à combien de threads cela fonctionne-t-il ?
+ * jusqu'à combien de threads cela fonctionne-t-il ? -> 1010000
  *
  * support nécessaire:
  * - thread_create()

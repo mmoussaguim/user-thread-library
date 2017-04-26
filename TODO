@@ -4,3 +4,7 @@ englober la fonction passer un paramètre (func) dans une grosse fonction qui ex
 thread_join:
 le thread courant doit attendre le thread thread!
 
+
+
+pb au niveau des contextes:
+le main revient au debut

@@ -1,5 +1,6 @@
 #include <ucontext.h>
 #include "interface.h"
+#include <valgrind/valgrind.h>
 
 typedef enum{
   running, //en cours d'exécution
@@ -15,6 +16,8 @@ typedef struct Thread{
   ucontext_t uc;
   thread_t father;
   State state;
+  int vlg_id;
+  void *retval;
 } Thread;
 
 

@@ -7,7 +7,7 @@
  *
  * la durée doit être proportionnel à la valeur du résultat.
  * valgrind doit être content.
- * jusqu'à quelle valeur cela fonctionne-t-il ?
+ * jusqu'à quelle valeur cela fonctionne-t-il ? -> 28 (res=317811)
  *
  * support nécessaire:
  * - thread_create()
