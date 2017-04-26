@@ -6,6 +6,8 @@ ex: thread.c example.c
 split:
 	gcc thread_split.c 
 
+alltests: test1 test11 test12 test2 test21 test22 test23 test31 test32 test51
+
 test1:
 	gcc thread.c tests/01-main.c -o Test1 -Wall -g -O0
 test2:
