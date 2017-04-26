@@ -17,7 +17,7 @@ test12:
 test21:
 	gcc thread.c tests/21-create-many.c -o Test21 -Wall -g -O0
 test22:
-	gcc thread.c tests/02-create-many-recursive.c -o Test22 -Wall -g -O0
+	gcc thread.c tests/22-create-many-recursive.c -o Test22 -Wall -g -O0
 test23:
 	gcc thread.c tests/23-create-many-once.c -o Test23 -Wall -g -O0
 test31:

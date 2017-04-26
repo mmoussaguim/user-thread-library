@@ -232,7 +232,8 @@ extern int thread_join(thread_t thread, void **retval){
     //printf("--TEST-- join2\n");    
   }
   //printf("--TEST-- join fin\n");
-  *retval = ((Thread*)thread)->retval;
+  if(retval != NULL)
+    *retval = ((Thread*)thread)->retval;
   return 0;
 
   
