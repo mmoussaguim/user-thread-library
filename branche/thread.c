@@ -42,20 +42,34 @@ extern thread_t thread_self(void){
   return running_thread;
 }
 
+
+// fonction englobante pour connnaitre la fin d'execution du thread
+void *tmp(void* (*func)(void*), void *arg){
+  printf("--TEST-- le thread est lance\n");
+  func(arg);
+  printf("--TEST-- Le thread a termine\n");
+  if (running_thread->state != dead)
+    thread_exit(NULL);
+  return NULL;
+  }
+
+
+
 extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg){
 
-  
   // fonction englobante pour connnaitre la fin d'execution du thread
-  void *tmp(void *arg){
+  // !!!!!! NE DOIT PAS ETRE LOCALE !!!!!!
+  /*void *tmp(void* (*func)(void*), void *arg){
     printf("--TEST-- le thread est lance\n");
     func(arg);
     printf("--TEST-- Le thread a termine\n");
     if (running_thread->state != dead)
       thread_exit(NULL);
     return NULL;
-  }
+    }*/
 
-  
+  printf("--TEST-- create tmp: %p\n",tmp);
+    
   //Préparer le contexte
   ucontext_t uc;
   getcontext(&uc); //TODO : attraper l'erreur 
@@ -63,7 +77,8 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   uc.uc_stack.ss_sp = malloc(uc.uc_stack.ss_size);
 
     
-  makecontext(&uc, (void(*)(void))*tmp, 1, funcarg);
+  makecontext(&uc, (void(*)(void))*tmp, 2,func, funcarg);
+  //makecontext(&uc, (void(*)(void))*tmp, 1, funcarg);
   uc.uc_link = NULL; // ?
   
   //Créer un Thread
@@ -171,10 +186,10 @@ extern int thread_join(thread_t thread, void **retval){
 
 
 
-
+  printf("--TEST-- join debut: %p\n",thread);
 
   // CC de yield:
-
+  
   if(retval != NULL)
     *retval = NULL; // a gerer
   
@@ -183,7 +198,6 @@ extern int thread_join(thread_t thread, void **retval){
     if( ((Thread *)thread)->father != NULL)
       printf("TEST\n");
     
-    printf("--TEST-- join debut: %p\n",thread);
     Thread * son = (Thread *)thread;
     son->father = thread_self();
     //printf("--TEST-- join jusque la tout va bien\n");
@@ -261,8 +275,9 @@ extern void thread_exit(void *retval){
       running_thread = run_elt->thread;
       free(run_elt);
       //printf("--TEST-- %d\n",running_thread->id);
-      setcontext(&(running_thread->uc));
-      printf("--TEST-- exit ok\n");
+      printf("--TEST-- exit %p\n",&(running_thread->uc));
+      setcontext(&(running_thread->uc)); // Exception  en point flottant
+      printf("--TEST-- exit jusqu'ici tout va bien\n");
     }
     printf("--TEST-- exit fin\n");
   //while(1){} // Pour eviter le warning: la fonction ne doit pas retourner
