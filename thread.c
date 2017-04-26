@@ -80,9 +80,14 @@ int valgrind_stackid = VALGRIND_STACK_REGISTER(uc.uc_stack.ss_sp,
   
   //L'ajouter à la runqueue
   STAILQ_INSERT_TAIL(&runqueue, new_elt, next);
+  //free(new_elt);
   *newthread = new_th;
   return 0;
 }
+
+
+
+
 
 extern int thread_yield(void){
   if(STAILQ_EMPTY(&runqueue))
@@ -123,7 +128,7 @@ extern int thread_join(thread_t thread, void **retval){
   //le thread courant est passé en father de 'thread', et quitte l'état running
   //run le premier de la fifo
     
-  while(!(thread == NULL || ((Thread*)thread)->state == dead)){
+  if(!(thread == NULL || ((Thread*)thread)->state == dead)){
 
     Thread * son = (Thread *)thread;
     son->father = thread_self();
@@ -173,22 +178,24 @@ extern void thread_exit(void *retval){
   running_thread->state = dead;
   Thread *father = running_thread->father;
   
-    //mettre le father à la fin de la runqueue
-    QueueElt *run_elt = malloc(sizeof(QueueElt));
-    if (father != NULL && father->state != ready){ 
-      father->state = ready;
-      run_elt->thread = father;
-      STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
-    }
+  //mettre le father à la fin de la runqueue
+  QueueElt *run_elt;
+  if (father != NULL && father->state != ready){ 
+    run_elt = malloc(sizeof(QueueElt));
+    father->state = ready;
+    run_elt->thread = father;
+    STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
+  }
 
-    //run le premier de la fifo
-    if(!STAILQ_EMPTY(&runqueue)){
-      run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
-      STAILQ_REMOVE_HEAD(&runqueue, next);
-      running_thread = run_elt->thread;
-      free(run_elt);
-      setcontext(&(running_thread->uc)); 
-    }
+
+  //run le premier de la fifo
+  if(!STAILQ_EMPTY(&runqueue)){
+    run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
+    running_thread = run_elt->thread;
+    STAILQ_REMOVE_HEAD(&runqueue, next);
+    free(run_elt);
+    setcontext(&(running_thread->uc)); 
+  }
 }
 
 
