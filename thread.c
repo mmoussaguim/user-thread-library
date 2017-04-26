@@ -20,18 +20,35 @@ int id_ref = 0;
 //File d'attente de threads prêts
 STAILQ_HEAD(ma_fifo, QueueElt) runqueue;
 
+//FIFO contenant un pointeur vers tous les threads (pour libération)
+STAILQ_HEAD(ma_fifo2, QueueElt) deletequeue;
+
 
 //Pointeur du thread en exécution
 Thread current_thread; // à initialiser ?
 Thread* running_thread = &current_thread;
 
 
-
-
-
 /**************************************************/
 /***************** LES FONCTIONS ******************/
 /**************************************************/
+
+
+int free_thread(Thread ** thread){
+  printf("--TEST-- freethread\n");
+  if(thread != NULL && *thread != NULL){
+    if((*thread)->uc.uc_stack.ss_sp != NULL){
+      printf("--TEST-- freethread %p\n",(*thread)->uc.uc_stack.ss_sp);
+      free((*thread)->uc.uc_stack.ss_sp);
+      (*thread)->uc.uc_stack.ss_sp = NULL;
+      }
+    //printf("--TEST-- freethread thread:%p\n",*thread);
+    free(*thread);
+    *thread = NULL;
+    return 0;
+  }
+  return 1;
+}
 
 extern thread_t thread_self(void){
   //printf("--TEST-- self\n");
@@ -49,18 +66,15 @@ void *tmp(void* (*func)(void*), void *arg){
 
 
 
-extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg){
-
-      
+extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg){   
   //Préparer le contexte
   static ucontext_t uc;
   getcontext(&uc); //TODO : attraper l'erreur 
   uc.uc_stack.ss_size = 64*STACK_SIZE;
   uc.uc_stack.ss_sp = malloc(uc.uc_stack.ss_size);
-
-    
+  
   makecontext(&uc, (void(*)(void))*tmp, 2,func, funcarg);
-  uc.uc_link = NULL; // ?
+  uc.uc_link = NULL;
   
   //Créer un Thread
   Thread *new_th = malloc(sizeof(Thread));
@@ -69,19 +83,23 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   new_th->father = NULL;
   new_th->retval = NULL;
   new_th->state = ready;
+  //Référencer ce thread sur newthread
+  *newthread = new_th;
+  
+  //Valgrind
+  int valgrind_stackid = VALGRIND_STACK_REGISTER(uc.uc_stack.ss_sp,
+						 uc.uc_stack.ss_sp + uc.uc_stack.ss_size);
+  new_th->vlg_id = valgrind_stackid;
 
-int valgrind_stackid = VALGRIND_STACK_REGISTER(uc.uc_stack.ss_sp,
-                                               uc.uc_stack.ss_sp + uc.uc_stack.ss_size);
- new_th->vlg_id = valgrind_stackid;
-
-  //Créer un QueueElt
+  //Créer un QueueElt pour chaque file
   QueueElt *new_elt = malloc(sizeof(QueueElt));
   new_elt->thread = new_th;
-  
-  //L'ajouter à la runqueue
+  QueueElt *new_elt2 = malloc(sizeof(QueueElt));
+  new_elt2->thread = new_th;
+  //L'ajouter à la runqueue et à la deletequeue
   STAILQ_INSERT_TAIL(&runqueue, new_elt, next);
-  //free(new_elt);
-  *newthread = new_th;
+  STAILQ_INSERT_TAIL(&deletequeue, new_elt2, next);
+
   return 0;
 }
 
@@ -124,31 +142,25 @@ extern int thread_yield(void){
  * la valeur renvoyée par le thread est placée dans *retval.
  * si retval est NULL, la valeur de retour est ignorée.
  */
-extern int thread_join(thread_t thread, void **retval){
-  //le thread courant est passé en father de 'thread', et quitte l'état running
-  //run le premier de la fifo
-    
+extern int thread_join(thread_t thread, void **retval){  
   if(!(thread == NULL || ((Thread*)thread)->state == dead)){
-
+    // Renseigner le père au thread que l'on va attendre (son)
     Thread * son = (Thread *)thread;
     son->father = thread_self();
-    
-        
+      
+    // Passer l'état du thread courrant en blocked
     Thread * old_thread = running_thread;
     old_thread->state = blocked;
-    QueueElt *run_elt = malloc(sizeof(QueueElt));
-    run_elt->thread = thread_self();
     
     // Passer le premier thread de la runqueue en running
-    run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
+    QueueElt * run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
     running_thread = run_elt->thread;
     STAILQ_REMOVE_HEAD(&runqueue, next); 
     free(run_elt);
-    
     running_thread->state = running;
+
     // Recuperer le contexte du nouveau thread courant
-    // Et stocker le contexte courrant dans l'ancien thread courant
-    
+    // Et stocker le contexte courrant dans l'ancien thread courant    
     swapcontext(&(old_thread->uc),&(running_thread->uc)); 
   }
 
@@ -196,6 +208,7 @@ extern void thread_exit(void *retval){
     free(run_elt);
     setcontext(&(running_thread->uc)); 
   }
+  //exit(0);//while(1); 
 }
 
 
@@ -205,12 +218,30 @@ void init(void){
   running_thread->id = id_ref++;//ID_FIRST_THREAD;
   running_thread->father = NULL;
   getcontext(&(running_thread->uc));
+  running_thread->uc.uc_stack.ss_sp = malloc(running_thread->uc.uc_stack.ss_size);
 
-  //initialisation de la runqueue
+  //initialisation de la runqueue et deletequeue
   STAILQ_INIT(&runqueue);
+  STAILQ_INIT(&deletequeue);
+
+  //ajout du thread main dans la deletequeue
+  QueueElt *run_elt = malloc(sizeof(QueueElt));
+  run_elt->thread = thread_self();
+  STAILQ_INSERT_TAIL(&deletequeue, run_elt, next); 
 }
 
 
 void end(void){
-  free(running_thread);
+  //free(running_thread); //nope normalement il est dans la deletequeue
+  QueueElt *elt;
+  QueueElt *previous_elt = NULL;
+  STAILQ_FOREACH(elt, &deletequeue, next){
+    printf("--TEST-- end elt:%p->%p\n",elt,elt+sizeof(QueueElt));
+    if(previous_elt != NULL)
+      free(previous_elt);
+    free_thread(&(elt->thread));
+    previous_elt = elt;
+  }
+  if(previous_elt != NULL)
+    free(previous_elt);
 }
