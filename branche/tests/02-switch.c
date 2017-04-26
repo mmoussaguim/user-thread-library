@@ -17,13 +17,12 @@
 
 static void * thfunc(void *id)
 {
-  //int err, i;
-  /*
+  int err, i;
   for(i=0; i<10; i++) {
     printf("%s yield vers un autre thread\n", (char*) id);
     err = thread_yield();
     assert(!err);
-    }*/
+  }
 
   printf("%s terminé\n", (char*) id);
   thread_exit(NULL);
@@ -35,31 +34,27 @@ int main()
   void *res;
   int err, i;
 
-  
   err = thread_create(&th1, thfunc, "fils1");
   assert(!err);
   err = thread_create(&th2, thfunc, "fils2");
   assert(!err);
   err = thread_create(&th3, thfunc, "fils3");
   assert(!err);
-
-
-
   /* des switchs avec l'autre thread */
-  /*//for(i=0; i<20; i++) {
+  for(i=0; i<20; i++) {
     printf("le main yield vers un fils\n");
     err = thread_yield();
     assert(!err);
-    //}*/
+  }
 
-
-  printf("--TEST-- avant join1\n");
+  
   err = thread_join(th3, &res);
   assert(!err);
   assert(res == NULL);
-  printf("--TEST-- avant join2\n");
+  printf("--TEST-- join2\n");
   err = thread_join(th2, NULL); /* on ignore ce code de retour */
   assert(!err);
+  printf("--TEST-- join3\n");
   err = thread_join(th1, &res);
   assert(!err);
   assert(res == NULL);

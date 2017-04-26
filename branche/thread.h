@@ -17,6 +17,7 @@ typedef struct Thread{
   thread_t father;
   State state;
   int vlg_id;
+  void *retval;
 } Thread;
 
 

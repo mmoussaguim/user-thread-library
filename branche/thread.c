@@ -45,12 +45,13 @@ extern thread_t thread_self(void){
 
 // fonction englobante pour connnaitre la fin d'execution du thread
 void *tmp(void* (*func)(void*), void *arg){
-  printf("--TEST-- le thread est lance\n");
-  func(arg);
-  printf("--TEST-- Le thread a termine\n");
+  //printf("--TEST-- le thread est lance\n");
+  void * retval = func(arg);
+  //printf("--TEST-- Le thread a termine\n");
+  //running_thread->retval = retval;
   if (running_thread->state != dead)
-    thread_exit(NULL);
-  return NULL;
+    thread_exit(retval);
+  return retval;
   }
 
 
@@ -75,7 +76,7 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   uc.uc_stack.ss_size = 64*STACK_SIZE;
   uc.uc_stack.ss_sp = malloc(uc.uc_stack.ss_size);
 
-  printf("--TEST-- create uc: %p -> %p\n", &uc, &uc + sizeof(ucontext_t));
+  //printf("--TEST-- create uc: %p -> %p\n", &uc, &uc + sizeof(ucontext_t));
   
   makecontext(&uc, (void(*)(void))*tmp, 2,func, funcarg);
   //makecontext(&uc, (void(*)(void))*tmp, 1, funcarg);
@@ -86,6 +87,7 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   new_th->id = id_ref++;
   new_th->uc = uc;
   new_th->father = NULL;
+  new_th->retval = NULL;
   //new_th->father = running_thread;
   new_th->state = ready;
 
@@ -186,23 +188,20 @@ extern int thread_join(thread_t thread, void **retval){
 
 
 
-  printf("--TEST-- join debut: %p\n",thread);
+  //printf("--TEST-- join debut: %p\n",thread);
 
   // CC de yield:
   
-  if(retval != NULL)
-    *retval = NULL; // a gerer
-  
   while(!(thread == NULL || ((Thread*)thread)->state == dead)){
-    
-    if( ((Thread *)thread)->father != NULL)
-      printf("TEST\n");
+
+    /*if( ((Thread *)thread)->father != NULL)
+      printf("TEST\n");*/
     
     Thread * son = (Thread *)thread;
     son->father = thread_self();
     //printf("--TEST-- join jusque la tout va bien\n");
 
-
+        
     Thread * old_thread = running_thread;
     old_thread->state = blocked;
     //printf("--TEST-- running thread: %p\n",running_thread);
@@ -230,9 +229,10 @@ extern int thread_join(thread_t thread, void **retval){
     //printf("contexte1: %p\n contecte2: %p\n",&(old_thread->uc),&(running_thread->uc));
 
     swapcontext(&(old_thread->uc),&(running_thread->uc)); // fait un segfault (probablement quand il ne reste qu'un seul processus
-    printf("--TEST-- join2\n");    
+    //printf("--TEST-- join2\n");    
   }
-  printf("--TEST-- join fin\n");
+  //printf("--TEST-- join fin\n");
+  *retval = ((Thread*)thread)->retval;
   return 0;
 
   
@@ -251,8 +251,11 @@ extern int thread_join(thread_t thread, void **retval){
  * n'est pas correctement implémenté (il ne doit jamais retourner).
  */
 extern void thread_exit(void *retval){
-  printf("--TEST-- exit debut\n");
+  //printf("--TEST-- exit debut\n");
   //écrit dans retval avant de free
+
+  running_thread->retval = retval;
+  //printf("--TEST11-- exit res=%p\n",running_thread->retval);
   running_thread->state = dead;
   Thread *father = running_thread->father;
   
@@ -262,7 +265,7 @@ extern void thread_exit(void *retval){
     //mettre le father à la fin de la runqueue
     QueueElt *run_elt = malloc(sizeof(QueueElt));
     if (father != NULL && father->state != ready){ // segfault sur cette ligne
-      printf("--TEST-- exit2\n");
+      //printf("--TEST-- exit2\n");
       father->state = ready;
       run_elt->thread = father;
       STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
@@ -275,11 +278,11 @@ extern void thread_exit(void *retval){
       running_thread = run_elt->thread;
       free(run_elt);
       //printf("--TEST-- %d\n",running_thread->id);
-      printf("--TEST-- exit %p\n",&(running_thread->uc));
+      //printf("--TEST-- exit %p\n",&(running_thread->uc));
       setcontext(&(running_thread->uc)); // Exception  en point flottant
-      printf("--TEST-- exit jusqu'ici tout va bien\n");
+      //printf("--TEST-- exit jusqu'ici tout va bien\n");
     }
-    printf("--TEST-- exit fin\n");
+    //printf("--TEST-- exit fin\n");
   //while(1){} // Pour eviter le warning: la fonction ne doit pas retourner
 }
 
