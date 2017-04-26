@@ -4,11 +4,7 @@
 #include <sys/queue.h>
 #include <ucontext.h> /* ne compile pas avec -std=c89 ou -std=c99 */
 
-
-
 #define STACK_SIZE 1024
-
-
 
 typedef struct QueueElt{
   Thread *thread;
@@ -28,6 +24,10 @@ STAILQ_HEAD(ma_fifo, QueueElt) runqueue;
 //Pointeur du thread en exécution
 Thread current_thread; // à initialiser ?
 Thread* running_thread = &current_thread;
+
+
+
+
 
 /**************************************************/
 /***************** LES FONCTIONS ******************/
@@ -201,4 +201,9 @@ void init(void){
 
   //initialisation de la runqueue
   STAILQ_INIT(&runqueue);
+}
+
+
+void end(void){
+  free(running_thread);
 }

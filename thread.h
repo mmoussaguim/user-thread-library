@@ -23,3 +23,4 @@ typedef struct Thread{
 
 
 void init(void) __attribute__((constructor));
+void end(void) __attribute__((destructor));
