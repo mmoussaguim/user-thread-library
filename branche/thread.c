@@ -68,15 +68,15 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
     return NULL;
     }*/
 
-  printf("--TEST-- create tmp: %p\n",tmp);
     
   //Préparer le contexte
-  ucontext_t uc;
+  static ucontext_t uc;
   getcontext(&uc); //TODO : attraper l'erreur 
   uc.uc_stack.ss_size = 64*STACK_SIZE;
   uc.uc_stack.ss_sp = malloc(uc.uc_stack.ss_size);
 
-    
+  printf("--TEST-- create uc: %p -> %p\n", &uc, &uc + sizeof(ucontext_t));
+  
   makecontext(&uc, (void(*)(void))*tmp, 2,func, funcarg);
   //makecontext(&uc, (void(*)(void))*tmp, 1, funcarg);
   uc.uc_link = NULL; // ?
