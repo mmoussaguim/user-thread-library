@@ -14,9 +14,6 @@ typedef struct QueueElt{
 /**************************************************/
 /***************** LES GLOBALES *******************/
 /**************************************************/
-//Identifiant de référence pour les nouveaux threads
-int id_ref = 0;
-
 //File d'attente de threads prêts
 STAILQ_HEAD(ma_fifo, QueueElt) runqueue;
 
@@ -33,16 +30,17 @@ Thread* running_thread = &current_thread;
 /***************** LES FONCTIONS ******************/
 /**************************************************/
 
-
 int free_thread(Thread ** thread){
   printf("--TEST-- freethread\n");
   if(thread != NULL && *thread != NULL){
+    
     if((*thread)->uc.uc_stack.ss_sp != NULL){
       printf("--TEST-- freethread %p\n",(*thread)->uc.uc_stack.ss_sp);
       free((*thread)->uc.uc_stack.ss_sp);
       (*thread)->uc.uc_stack.ss_sp = NULL;
       }
     //printf("--TEST-- freethread thread:%p\n",*thread);
+    
     free(*thread);
     *thread = NULL;
     return 0;
@@ -59,7 +57,7 @@ extern thread_t thread_self(void){
 // fonction englobante pour connnaitre la fin d'execution du thread
 void *tmp(void* (*func)(void*), void *arg){
   void * retval = func(arg);
-  if (running_thread->state != dead)
+  if (!running_thread->is_dead)
     thread_exit(retval);
   return retval;
   }
@@ -72,17 +70,18 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   getcontext(&uc); //TODO : attraper l'erreur 
   uc.uc_stack.ss_size = 64*STACK_SIZE;
   uc.uc_stack.ss_sp = malloc(uc.uc_stack.ss_size);
-  
+  //static char stack[64*STACK_SIZE];
+  //uc.uc_stack.ss_sp = stack;
+
   makecontext(&uc, (void(*)(void))*tmp, 2,func, funcarg);
   uc.uc_link = NULL;
   
   //Créer un Thread
   Thread *new_th = malloc(sizeof(Thread));
-  new_th->id = id_ref++;
   new_th->uc = uc;
   new_th->father = NULL;
   new_th->retval = NULL;
-  new_th->state = ready;
+  new_th->is_dead = 0; 
   //Référencer ce thread sur newthread
   *newthread = new_th;
   
@@ -112,7 +111,6 @@ extern int thread_yield(void){
     return 0;
     
   Thread * old_thread = running_thread;
-  old_thread->state = ready;
   QueueElt *run_elt = malloc(sizeof(QueueElt));
   run_elt->thread = thread_self();
 
@@ -127,7 +125,6 @@ extern int thread_yield(void){
   STAILQ_REMOVE_HEAD(&runqueue, next); 
   free(run_elt);
 
-  running_thread->state = running;
   // Recuperer le contexte du nouveau thread courant
   // Et stocker le contexte courrant dans l'ancien thread courant
   swapcontext(&(old_thread->uc),&(running_thread->uc)); 
@@ -143,21 +140,19 @@ extern int thread_yield(void){
  * si retval est NULL, la valeur de retour est ignorée.
  */
 extern int thread_join(thread_t thread, void **retval){  
-  if(!(thread == NULL || ((Thread*)thread)->state == dead)){
+  if(!(thread == NULL || ((Thread*)thread)->is_dead)){
     // Renseigner le père au thread que l'on va attendre (son)
     Thread * son = (Thread *)thread;
     son->father = thread_self();
       
     // Passer l'état du thread courrant en blocked
     Thread * old_thread = running_thread;
-    old_thread->state = blocked;
     
     // Passer le premier thread de la runqueue en running
     QueueElt * run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
     running_thread = run_elt->thread;
     STAILQ_REMOVE_HEAD(&runqueue, next); 
     free(run_elt);
-    running_thread->state = running;
 
     // Recuperer le contexte du nouveau thread courant
     // Et stocker le contexte courrant dans l'ancien thread courant    
@@ -166,39 +161,22 @@ extern int thread_join(thread_t thread, void **retval){
 
   if(retval != NULL)
     *retval = ((Thread*)thread)->retval;
-  return 0;
-
-  
+  return 0;  
 }
 
-
-
-
-
-/* terminer le thread courant en renvoyant la valeur de retour retval.
- * cette fonction ne retourne jamais.
- *
- * L'attribut noreturn aide le compilateur à optimiser le code de
- * l'application (élimination de code mort). Attention à ne pas mettre
- * cet attribut dans votre interface tant que votre thread_exit()
- * n'est pas correctement implémenté (il ne doit jamais retourner).
- */
 extern void thread_exit(void *retval){
   //écrit dans retval avant de free
-
   running_thread->retval = retval;
-  running_thread->state = dead;
+  running_thread->is_dead = 1;
   Thread *father = running_thread->father;
   
   //mettre le father à la fin de la runqueue
   QueueElt *run_elt;
-  if (father != NULL && father->state != ready){ 
+  if (father != NULL){ 
     run_elt = malloc(sizeof(QueueElt));
-    father->state = ready;
     run_elt->thread = father;
     STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
   }
-
 
   //run le premier de la fifo
   if(!STAILQ_EMPTY(&runqueue)){
@@ -208,16 +186,18 @@ extern void thread_exit(void *retval){
     free(run_elt);
     setcontext(&(running_thread->uc)); 
   }
-  //exit(0);//while(1); 
+  exit(0);//while(1); 
 }
 
 
 void init(void){
   //initialisation du thread courant
   running_thread = malloc(sizeof(struct Thread));
-  running_thread->id = id_ref++;//ID_FIRST_THREAD;
   running_thread->father = NULL;
   getcontext(&(running_thread->uc));
+  running_thread->uc.uc_stack.ss_size = 64*STACK_SIZE;
+  // static char stack[64*STACK_SIZE];
+  //running_thread->uc.uc_stack.ss_sp = stack;
   running_thread->uc.uc_stack.ss_sp = malloc(running_thread->uc.uc_stack.ss_size);
 
   //initialisation de la runqueue et deletequeue
