@@ -20,5 +20,27 @@ int run_other_thread(Thread * old_thread){
     swapcontext(&(old_thread->uc),&(running_thread->uc));
   else 
     setcontext(&(running_thread->uc));
+
+  /********** PREEMPTION *****************/
+  alarm(42); 
+  signal(SIGALRM,preempt);
+  /********** PREEMPTION *****************/
+
   return 0;
+}
+
+
+/*
+  Signal handler
+  Fonction permettant de gérer la préemption
+  A passer en argument de signal dans run_other_thread
+ */
+void preempt(int signum){ 
+  running_thread->state = ready;
+
+  QueueElt *run_elt = malloc(sizeof(QueueElt));
+  run_elt->thread = thread_self();
+  STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
+
+  run_other_thread(running_thread);
 }
