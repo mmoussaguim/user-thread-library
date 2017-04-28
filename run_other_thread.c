@@ -9,7 +9,7 @@ int run_other_thread(Thread * old_thread){
   if(STAILQ_EMPTY(&runqueue))
     return 1;
   
-  run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
+  QueueElt *run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
   running_thread = run_elt->thread;
   STAILQ_REMOVE_HEAD(&runqueue, next); 
   free(run_elt);
