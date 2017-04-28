@@ -31,6 +31,9 @@ test51:
 test61:
 	gcc thread.c tests/61-mutex.c -o Test61 -Wall -g -O0
 
+testpreempt:
+	gcc thread.c tests/preemption.c -o Testpreempt -Wall -g -O0
+
 clean :
 	rm -f *.o a.out
 	rm -f Programme

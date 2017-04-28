@@ -3,6 +3,8 @@
 #include "thread.h"
 #include <sys/queue.h>
 #include <ucontext.h> /* ne compile pas avec -std=c89 ou -std=c99 */
+#include <unistd.h>
+
 
 #define STACK_SIZE 1024
 
@@ -29,6 +31,59 @@ Thread* running_thread = &current_thread;
 /**************************************************/
 /***************** LES FONCTIONS ******************/
 /**************************************************/
+
+
+
+/*
+  Si dans exit passer NULL en argument
+  Retourne 0 si un thread de la runqueue a ete lance
+  1 si la runqueue est vide
+ */
+int run_other_thread(Thread * old_thread){
+
+  if(STAILQ_EMPTY(&runqueue))
+    return 1;
+  
+  QueueElt *run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
+  running_thread = run_elt->thread;
+  STAILQ_REMOVE_HEAD(&runqueue, next); 
+  free(run_elt);
+
+  /********** PREEMPTION *****************/
+  alarm(1); // ualarm()
+  signal(SIGALRM,preempt);
+  /********** PREEMPTION *****************/
+  //running_thread->state = running;
+  
+  if(old_thread != NULL)
+    swapcontext(&(old_thread->uc),&(running_thread->uc));
+  else 
+    setcontext(&(running_thread->uc));
+
+  /********** PREEMPTION *****************/
+  alarm(1); // ualarm()
+  signal(SIGALRM,preempt);
+  /********** PREEMPTION *****************/
+
+  return 0;
+}
+
+
+/*
+  Signal handler
+  Fonction permettant de gérer la préemption
+  A passer en argument de signal dans run_other_thread
+ */
+void preempt(int signum){ 
+  //running_thread->state = ready;
+  printf("--TEST-- preemption du thread %p\n",running_thread);
+  QueueElt *run_elt = malloc(sizeof(QueueElt));
+  run_elt->thread = thread_self();
+  STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
+
+  run_other_thread(running_thread);
+}
+
 
 int free_thread(Thread ** thread){
   printf("--TEST-- freethread\n");
@@ -110,14 +165,14 @@ extern int thread_yield(void){
   if(STAILQ_EMPTY(&runqueue))
     return 0;
     
-  Thread * old_thread = running_thread;
+  //Thread * old_thread = running_thread;
   QueueElt *run_elt = malloc(sizeof(QueueElt));
   run_elt->thread = thread_self();
 
   STAILQ_INSERT_TAIL(&runqueue, run_elt, next); 
 
   // Si l'ajout ne s'est pas bien passé, quitter
-  if(STAILQ_EMPTY(&runqueue))
+  /*if(STAILQ_EMPTY(&runqueue))
     return 1;
   // Passer le premier thread de la runqueue en running
   run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
@@ -127,7 +182,8 @@ extern int thread_yield(void){
 
   // Recuperer le contexte du nouveau thread courant
   // Et stocker le contexte courrant dans l'ancien thread courant
-  swapcontext(&(old_thread->uc),&(running_thread->uc)); 
+  swapcontext(&(old_thread->uc),&(running_thread->uc)); */
+  run_other_thread(running_thread);
   return 0;
 }
 
@@ -146,7 +202,7 @@ extern int thread_join(thread_t thread, void **retval){
     son->father = thread_self();
       
     // Passer l'état du thread courrant en blocked
-    Thread * old_thread = running_thread;
+    /*Thread * old_thread = running_thread;
     
     // Passer le premier thread de la runqueue en running
     QueueElt * run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
@@ -156,7 +212,8 @@ extern int thread_join(thread_t thread, void **retval){
 
     // Recuperer le contexte du nouveau thread courant
     // Et stocker le contexte courrant dans l'ancien thread courant    
-    swapcontext(&(old_thread->uc),&(running_thread->uc)); 
+    swapcontext(&(old_thread->uc),&(running_thread->uc)); */
+    run_other_thread(running_thread);
   }
 
   if(retval != NULL)
@@ -179,13 +236,14 @@ extern void thread_exit(void *retval){
   }
 
   //run le premier de la fifo
-  if(!STAILQ_EMPTY(&runqueue)){
+  /*if(!STAILQ_EMPTY(&runqueue)){
     run_elt = (QueueElt *) STAILQ_FIRST(&runqueue);
     running_thread = run_elt->thread;
     STAILQ_REMOVE_HEAD(&runqueue, next);
     free(run_elt);
     setcontext(&(running_thread->uc)); 
-  }
+    }*/
+  run_other_thread(NULL);
   exit(0);//while(1); 
 }
 

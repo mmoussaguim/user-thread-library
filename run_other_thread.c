@@ -22,7 +22,7 @@ int run_other_thread(Thread * old_thread){
     setcontext(&(running_thread->uc));
 
   /********** PREEMPTION *****************/
-  alarm(42); 
+  alarm(42); // ualarm()
   signal(SIGALRM,preempt);
   /********** PREEMPTION *****************/
 
@@ -36,8 +36,8 @@ int run_other_thread(Thread * old_thread){
   A passer en argument de signal dans run_other_thread
  */
 void preempt(int signum){ 
-  running_thread->state = ready;
-
+  //running_thread->state = ready;
+  printf("--TEST-- preemption du thread %p\n",running_thread);
   QueueElt *run_elt = malloc(sizeof(QueueElt));
   run_elt->thread = thread_self();
   STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
