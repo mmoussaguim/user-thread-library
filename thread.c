@@ -7,6 +7,7 @@
 
 
 #define STACK_SIZE 1024
+#define PREEMPT_TIME 50000// en usec
 
 typedef struct QueueElt{
   Thread *thread;
@@ -61,7 +62,8 @@ int run_other_thread(Thread * old_thread){
     setcontext(&(running_thread->uc));
 
   /********** PREEMPTION *****************/
-  alarm(1); // ualarm()
+  //alarm(1); 
+  ualarm(PREEMPT_TIME,0);
   signal(SIGALRM,preempt);
   /********** PREEMPTION *****************/
 
