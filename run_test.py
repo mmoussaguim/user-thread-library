@@ -1,6 +1,6 @@
-import subprocess
-import timeit
+import numpy as np
 import os
+import matplotlib.pyplot as plt
 
 print "Test1 : "
 os.system('time ./Test1')
@@ -16,11 +16,36 @@ os.system('time ./Test12')
 
 
 print "\nLancement du test 21 pour 20 threads max\n"
-for i in range (21):
-    pow = 100*i
-    print "Test21 avec ",pow,"threads :"
-    os.system('time ./Test21 '+str(pow))
-    
+l = np.arange(0,10**5,10**3)
+content = []
+pthread = []
+os.system('rm time.txt')
+for i in l:
+    #print "Test21 avec ",i,"threads :"
+    a = "(time ./Test21 "+str(i)+") 2> tmp.txt 1>/dev/null && awk \'/real/ {print substr($2,3,5)}\' tmp.txt >> time.txt"
+    #print a
+    os.system(a)
+
+with open('time.txt') as f:
+    content = f.readlines()
+content = [x.strip() for x in content]
+
+
+os.system('rm time.txt')
+for i in l:
+    #print "Test21 avec ",i,"threads :"
+    a = "(time pthread/Test21_pthread "+str(i)+") 2> tmp.txt 1>/dev/null && awk \'/real/ {print substr($2,3,5)}\' tmp.txt >> time.txt"
+    #print a
+    os.system(a)
+
+with open('time.txt') as f:
+    pthread = f.readlines()
+pthread = [x.strip() for x in pthread] 
+
+plt.title('Test 21')
+plt.plot(l,content,'b')
+plt.plot(l,pthread,'r')
+plt.show()
 '''
 print "\nLancement du test 22 pour 20 threads max\n"
 for i in range (21):
