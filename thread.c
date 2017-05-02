@@ -7,7 +7,7 @@
 
 
 #ifndef DEBUG
-#define DEBUG 0
+#define DEBUG 1
 #endif
 
 #define debug_printf(...) \
@@ -63,7 +63,8 @@ int run_other_thread(Thread * old_thread){
 
   /********** PREEMPTION *****************/
   //alarm(1); 
-  ualarm(PREEMPT_TIME/(running_thread->priority + 1),0);
+  //ualarm(PREEMPT_TIME/(running_thread->priority + 1),0);
+  ualarm(preemptime(running_thread),0);
   signal(SIGALRM,preempt);
   /********** PREEMPTION *****************/
   //running_thread->state = running;
@@ -82,6 +83,12 @@ int run_other_thread(Thread * old_thread){
   return 0;
 }
 
+int preemptime(Thread * thread){
+  if(thread == NULL)
+    return -1;
+  debug_printf("--TEST-- preemptime: %d us\n",PREEMPT_TIME + ((PREEMPT_TIME * (10 - thread->priority))/10) / 2);
+  return PREEMPT_TIME + ((PREEMPT_TIME * (10 - thread->priority))/10) / 2;
+}
 
 /*
   Signal handler
@@ -281,7 +288,7 @@ void init(void){
   // static char stack[64*STACK_SIZE];
   //running_thread->uc.uc_stack.ss_sp = stack;
   running_thread->uc.uc_stack.ss_sp = malloc(running_thread->uc.uc_stack.ss_size);
-
+  running_thread->priority = DEFAULT_PRIORITY;
   //initialisation de la runqueue et deletequeue
   STAILQ_INIT(&runqueue);
   STAILQ_INIT(&deletequeue);

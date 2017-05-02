@@ -8,7 +8,7 @@ typedef struct Thread{
   int is_dead;
   void *retval;
   int vlg_id;
-  int priority;
+  int priority; // 0 <= priority <= 20
 } Thread;
 
 
@@ -16,5 +16,6 @@ typedef struct Thread{
 void init(void) __attribute__((constructor));
 void end(void) __attribute__((destructor));
 int run_other_thread(Thread * old_thread);
+int preemptime(Thread * thread);
 void preempt(int signum);
 int thread_setschedprio(Thread * thread, int prio);
