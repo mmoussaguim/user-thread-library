@@ -86,7 +86,7 @@ int run_other_thread(Thread * old_thread){
 int preemptime(Thread * thread){
   if(thread == NULL)
     return -1;
-  debug_printf("--TEST-- preemptime: %d us\n",PREEMPT_TIME + ((PREEMPT_TIME * (10 - thread->priority))/10) / 2);
+  //debug_printf("--TEST-- preemptime: %d us\n",PREEMPT_TIME + ((PREEMPT_TIME * (10 - thread->priority))/10) / 2);
   return PREEMPT_TIME + ((PREEMPT_TIME * (10 - thread->priority))/10) / 2;
 }
 
@@ -98,7 +98,7 @@ int preemptime(Thread * thread){
 void preempt(int signum){ 
   //running_thread->state = ready;
   //if(!STAILQ_EMPTY(&runqueue)){
-    debug_printf("--TEST-- preemption du thread %p\n",running_thread);
+  debug_printf("--TEST-- preemption du thread %p\n",running_thread);
     QueueElt *run_elt = malloc(sizeof(QueueElt));
     run_elt->thread = thread_self();
     STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
@@ -108,11 +108,11 @@ void preempt(int signum){
 
 
 int free_thread(Thread ** thread){
-  debug_printf("--TEST-- freethread\n");
+  //debug_printf("--TEST-- freethread\n");
   if(thread != NULL && *thread != NULL){
     
     if((*thread)->uc.uc_stack.ss_sp != NULL){
-      debug_printf("--TEST-- freethread %p\n",(*thread)->uc.uc_stack.ss_sp);
+      //debug_printf("--TEST-- freethread %p\n",(*thread)->uc.uc_stack.ss_sp);
       free((*thread)->uc.uc_stack.ss_sp);
       (*thread)->uc.uc_stack.ss_sp = NULL;
       }
@@ -305,7 +305,7 @@ void end(void){
   QueueElt *elt;
   QueueElt *previous_elt = NULL;
   STAILQ_FOREACH(elt, &deletequeue, next){
-    debug_printf("--TEST-- end elt:%p->%p\n",elt,elt+sizeof(QueueElt));
+    //debug_printf("--TEST-- end elt:%p->%p\n",elt,elt+sizeof(QueueElt));
     if(previous_elt != NULL)
       free(previous_elt);
     free_thread(&(elt->thread));
