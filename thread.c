@@ -6,6 +6,14 @@
 #include <unistd.h>
 
 
+#ifndef DEBUG
+#define DEBUG 0
+#endif
+
+#define debug_printf(...) \
+            do { if (DEBUG) fprintf(stderr, __VA_ARGS__); } while (0)
+
+
 #define STACK_SIZE 1024
 #define PREEMPT_TIME 500000 // en usec
 #define DEFAULT_PRIORITY 10
@@ -83,7 +91,7 @@ int run_other_thread(Thread * old_thread){
 void preempt(int signum){ 
   //running_thread->state = ready;
   //if(!STAILQ_EMPTY(&runqueue)){
-    printf("--TEST-- preemption du thread %p\n",running_thread);
+    debug_printf("--TEST-- preemption du thread %p\n",running_thread);
     QueueElt *run_elt = malloc(sizeof(QueueElt));
     run_elt->thread = thread_self();
     STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
@@ -93,15 +101,15 @@ void preempt(int signum){
 
 
 int free_thread(Thread ** thread){
-  printf("--TEST-- freethread\n");
+  debug_printf("--TEST-- freethread\n");
   if(thread != NULL && *thread != NULL){
     
     if((*thread)->uc.uc_stack.ss_sp != NULL){
-      printf("--TEST-- freethread %p\n",(*thread)->uc.uc_stack.ss_sp);
+      debug_printf("--TEST-- freethread %p\n",(*thread)->uc.uc_stack.ss_sp);
       free((*thread)->uc.uc_stack.ss_sp);
       (*thread)->uc.uc_stack.ss_sp = NULL;
       }
-    //printf("--TEST-- freethread thread:%p\n",*thread);
+    //debug_printf("--TEST-- freethread thread:%p\n",*thread);
     
     free(*thread);
     *thread = NULL;
@@ -111,7 +119,7 @@ int free_thread(Thread ** thread){
 }
 
 extern thread_t thread_self(void){
-  //printf("--TEST-- self\n");
+  //debug_printf("--TEST-- self\n");
   return running_thread;
 }
 
@@ -290,7 +298,7 @@ void end(void){
   QueueElt *elt;
   QueueElt *previous_elt = NULL;
   STAILQ_FOREACH(elt, &deletequeue, next){
-    printf("--TEST-- end elt:%p->%p\n",elt,elt+sizeof(QueueElt));
+    debug_printf("--TEST-- end elt:%p->%p\n",elt,elt+sizeof(QueueElt));
     if(previous_elt != NULL)
       free(previous_elt);
     free_thread(&(elt->thread));

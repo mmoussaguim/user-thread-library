@@ -1,39 +1,33 @@
 import subprocess
 import timeit
+import os
 
-start = timeit.default_timer()
-subprocess.call(['./Test1'],stdout=subprocess.PIPE)
-stop = timeit.default_timer()
-print "Test1 : ",stop - start
+print "Test1 : "
+os.system('time ./Test1')
 
-start = timeit.default_timer()
-subprocess.call(['./Test2'],stdout=subprocess.PIPE)
-stop = timeit.default_timer()
-print "Test2 : ",stop - start
+print "Test2 : "
+os.system('time ./Test2')
 
-start = timeit.default_timer()
-subprocess.call(['./Test11'],stdout=subprocess.PIPE)
-stop = timeit.default_timer()
-print "Test11 : ",stop - start
+print "Test11 : "
+os.system('time ./Test11')
 
-start = timeit.default_timer()
-subprocess.call(['./Test12'],stdout=subprocess.PIPE)
-stop = timeit.default_timer()
-print "Test12 : ",stop - start
+print "Test12 : "
+os.system('time ./Test12')
+
 
 print "\nLancement du test 21 pour 20 threads max\n"
 for i in range (21):
-    start = timeit.default_timer()
-    pow = 10**i
-    subprocess.call(['./Test21','pow'],stdout=subprocess.PIPE)
-    stop = timeit.default_timer()
-    print "Test21 avec 10**",i,"threads :",stop - start
-
+    pow = 100*i
+    print "Test21 avec ",pow,"threads :"
+    os.system('time ./Test21 '+str(pow))
+    
+'''
 print "\nLancement du test 22 pour 20 threads max\n"
 for i in range (21):
     start = timeit.default_timer()
     pow = 10**i
-    subprocess.call(['./Test22','pow'],stdout=subprocess.PIPE)
+    os.system('./Test22 pow')
+    #subprocess.call(['./Test22','pow'],stdout=subprocess.PIPE)
     stop = timeit.default_timer()
     print "Test22 : ",stop - start
 
@@ -69,7 +63,7 @@ for i in range (21):
     stop = timeit.default_timer()
     print "Test51 : ",stop - start
 
-'''
+
 start = timeit.default_timer()
 subprocess.call(['./Test61'])
 stop = timeit.default_timer()
