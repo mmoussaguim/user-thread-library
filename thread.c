@@ -7,7 +7,10 @@
 
 
 #define STACK_SIZE 1024
-#define PREEMPT_TIME 50000// en usec
+#define PREEMPT_TIME 500000 // en usec
+#define DEFAULT_PRIORITY 10
+#define MAX_PRIO 20
+#define MIN_PRIO 0
 
 typedef struct QueueElt{
   Thread *thread;
@@ -51,7 +54,8 @@ int run_other_thread(Thread * old_thread){
   free(run_elt);
 
   /********** PREEMPTION *****************/
-  alarm(1); // ualarm()
+  //alarm(1); 
+  ualarm(PREEMPT_TIME/(running_thread->priority + 1),0);
   signal(SIGALRM,preempt);
   /********** PREEMPTION *****************/
   //running_thread->state = running;
@@ -61,10 +65,10 @@ int run_other_thread(Thread * old_thread){
   else 
     setcontext(&(running_thread->uc));
 
-  /********** PREEMPTION *****************/
+  /********** PREEMPTION *****************/   //inutile ??
   //alarm(1); 
-  ualarm(PREEMPT_TIME,0);
-  signal(SIGALRM,preempt);
+  //ualarm(PREEMPT_TIME,0);
+  //signal(SIGALRM,preempt);
   /********** PREEMPTION *****************/
 
   return 0;
@@ -78,12 +82,13 @@ int run_other_thread(Thread * old_thread){
  */
 void preempt(int signum){ 
   //running_thread->state = ready;
-  printf("--TEST-- preemption du thread %p\n",running_thread);
-  QueueElt *run_elt = malloc(sizeof(QueueElt));
-  run_elt->thread = thread_self();
-  STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
-
-  run_other_thread(running_thread);
+  //if(!STAILQ_EMPTY(&runqueue)){
+    printf("--TEST-- preemption du thread %p\n",running_thread);
+    QueueElt *run_elt = malloc(sizeof(QueueElt));
+    run_elt->thread = thread_self();
+    STAILQ_INSERT_TAIL(&runqueue, run_elt, next);
+    run_other_thread(running_thread);
+    //}
 }
 
 
@@ -139,6 +144,7 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   new_th->father = NULL;
   new_th->retval = NULL;
   new_th->is_dead = 0; 
+  new_th->priority = DEFAULT_PRIORITY;
   //Référencer ce thread sur newthread
   *newthread = new_th;
   
@@ -159,7 +165,15 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   return 0;
 }
 
+int thread_setschedprio(Thread * thread, int prio){
+  if (thread == NULL)
+    return -1;
+  if (prio > MAX_PRIO || prio < MIN_PRIO)
+    return -1;
 
+  thread->priority = prio;
+  return 0;
+}
 
 
 

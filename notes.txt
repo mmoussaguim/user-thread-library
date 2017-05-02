@@ -19,3 +19,9 @@ valgrind --leak-check=full --track-origins=yes --show-reachable=yes
 POUR MIEUX TRACKER LES FUITES MEMOIRES
 
 valgrind --db-attach=yes POUR A GDB
+
+
+
+---------------------------------
+Priorités:
+pthread_setscheldprio
