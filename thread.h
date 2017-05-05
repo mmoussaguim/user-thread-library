@@ -1,3 +1,6 @@
+#ifndef THREAD_H
+#define THREAD_H
+
 #include <ucontext.h>
 #include "interface.h"
 #include <valgrind/valgrind.h>
@@ -19,3 +22,5 @@ int run_other_thread(Thread * old_thread);
 int preemptime(Thread * thread);
 void preempt(int signum);
 int thread_setschedprio(Thread * thread, int prio);
+
+#endif
