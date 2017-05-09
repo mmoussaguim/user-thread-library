@@ -4,6 +4,7 @@
 #include <ucontext.h>
 #include "interface.h"
 #include <valgrind/valgrind.h>
+#include <sys/queue.h>
 
 typedef struct Thread{
   ucontext_t* uc;
@@ -12,6 +13,7 @@ typedef struct Thread{
   void *retval;
   int vlg_id;
   int priority; // 0 <= priority <= 20
+  STAILQ_ENTRY(Thread) next; //for runqueue
 } Thread;
 
 
