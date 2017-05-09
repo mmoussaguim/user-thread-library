@@ -18,7 +18,7 @@
  * - thread_mutex_init()
  * - thread_mutex_destroy()
  * - thread_mutex_lock()
- * - thread_mutex_unloc()
+ * - thread_mutex_unlock()
  */
 
 int counter = 0;

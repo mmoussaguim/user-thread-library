@@ -20,8 +20,20 @@ POUR MIEUX TRACKER LES FUITES MEMOIRES
 
 valgrind --db-attach=yes POUR A GDB
 
-
+--------------------------------
+Premption:
+thread execute 4ms
+attention: pas de preemption pendant changement de contexte -> proteger ->  masquer signaux le temps de la section critique puis demasquer, (annuler le cas echeant)
+Utiliser setitimer plutot que ualarm, et meme timer_gettime/timer_settime !!
 
 ---------------------------------
 Priorités:
 pthread_setscheldprio
+
+-------------------------------
+acces atomique: type __sync_lock_test_and_set(type *ptr,type value,....)
+
+--------------------------------
+join: detruire de thread a ce moment là
+
+thread détachés

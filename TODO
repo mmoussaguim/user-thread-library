@@ -1,10 +1,6 @@
-thread_create:
-englober la fonction passer un paramètre (func) dans une grosse fonction qui execute func puis signale que le thread a terminer
+*refaire Makefile (variable, make test pour lancer les tests,...)
+*proteger des instructions critiques de la preemption en masquant/annulant les signaux
+*define pour ne pas utiliser certaines options (preemption par exemple)
+*detruire le thread dans le join (sinon erreur utilisateur !), (attention thread detaché) (plus de deletequeue)
+*reflechir a comment ameliorer la performance du programme (fibo -> ~32)
 
-thread_join:
-le thread courant doit attendre le thread thread!
-
-
-
-pb au niveau des contextes:
-le main revient au debut
