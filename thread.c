@@ -38,7 +38,7 @@ STAILQ_HEAD(ma_fifo2, QueueElt) deletequeue;
 //Pointeur du thread en exécution
 Thread current_thread; // à initialiser ?
 Thread* running_thread = &current_thread;
-
+Thread* thmain;
 
 /**************************************************/
 /***************** LES FONCTIONS ******************/
@@ -70,9 +70,9 @@ int run_other_thread(Thread * old_thread){
   //running_thread->state = running;
   
   if(old_thread != NULL)
-    swapcontext(&(old_thread->uc),&(running_thread->uc));
+    swapcontext(old_thread->uc,running_thread->uc);
   else 
-    setcontext(&(running_thread->uc));
+    setcontext(running_thread->uc);
 
   /********** PREEMPTION *****************/   //inutile ??
   //alarm(1); 
@@ -108,13 +108,18 @@ void preempt(int signum){
 
 
 int free_thread(Thread ** thread){
+  if((*thread) == thmain)
+    return 1;
   //debug_printf("--TEST-- freethread\n");
   if(thread != NULL && *thread != NULL){
     
-    if((*thread)->uc.uc_stack.ss_sp != NULL){
+    if((*thread)->uc->uc_stack.ss_sp != NULL){
       //debug_printf("--TEST-- freethread %p\n",(*thread)->uc.uc_stack.ss_sp);
-      free((*thread)->uc.uc_stack.ss_sp);
-      (*thread)->uc.uc_stack.ss_sp = NULL;
+      free((*thread)->uc->uc_stack.ss_sp);
+      (*thread)->uc->uc_stack.ss_sp = NULL;
+
+
+      free((*thread)->uc);
       }
     //debug_printf("--TEST-- freethread thread:%p\n",*thread);
     
@@ -143,15 +148,15 @@ void *tmp(void* (*func)(void*), void *arg){
 
 extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funcarg){   
   //Préparer le contexte
-  static ucontext_t uc;
-  getcontext(&uc); //TODO : attraper l'erreur 
-  uc.uc_stack.ss_size = 64*STACK_SIZE;
-  uc.uc_stack.ss_sp = malloc(uc.uc_stack.ss_size);
+  ucontext_t* uc = malloc(sizeof(ucontext_t));
+  getcontext(uc); //TODO : attraper l'erreur 
+  uc->uc_stack.ss_size = 64*STACK_SIZE;
+  uc->uc_stack.ss_sp = malloc(uc->uc_stack.ss_size);
   //static char stack[64*STACK_SIZE];
   //uc.uc_stack.ss_sp = stack;
 
-  makecontext(&uc, (void(*)(void))*tmp, 2,func, funcarg);
-  uc.uc_link = NULL;
+  makecontext(uc, (void(*)(void))*tmp, 2,func, funcarg);
+  uc->uc_link = NULL;
   
   //Créer un Thread
   Thread *new_th = malloc(sizeof(Thread));
@@ -164,8 +169,8 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   *newthread = new_th;
   
   //Valgrind
-  int valgrind_stackid = VALGRIND_STACK_REGISTER(uc.uc_stack.ss_sp,
-						 uc.uc_stack.ss_sp + uc.uc_stack.ss_size);
+  int valgrind_stackid = VALGRIND_STACK_REGISTER(uc->uc_stack.ss_sp,
+						 uc->uc_stack.ss_sp + uc->uc_stack.ss_size);
   new_th->vlg_id = valgrind_stackid;
 
   //Créer un QueueElt pour chaque file
@@ -282,12 +287,14 @@ extern void thread_exit(void *retval){
 void init(void){
   //initialisation du thread courant
   running_thread = malloc(sizeof(struct Thread));
+  thmain = running_thread;
   running_thread->father = NULL;
-  getcontext(&(running_thread->uc));
-  running_thread->uc.uc_stack.ss_size = 64*STACK_SIZE;
+  running_thread->uc = malloc(sizeof(ucontext_t));
+  getcontext(running_thread->uc);
+  running_thread->uc->uc_stack.ss_size = 64*STACK_SIZE;
   // static char stack[64*STACK_SIZE];
   //running_thread->uc.uc_stack.ss_sp = stack;
-  running_thread->uc.uc_stack.ss_sp = malloc(running_thread->uc.uc_stack.ss_size);
+  running_thread->uc->uc_stack.ss_sp = malloc(running_thread->uc->uc_stack.ss_size);
   running_thread->priority = DEFAULT_PRIORITY;
   //initialisation de la runqueue et deletequeue
   STAILQ_INIT(&runqueue);
@@ -313,4 +320,9 @@ void end(void){
   }
   if(previous_elt != NULL)
     free(previous_elt);
+
+  free(thmain->uc->uc_stack.ss_sp);
+  free(thmain->uc);
+  free(thmain);
+
 }

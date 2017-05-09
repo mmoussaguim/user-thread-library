@@ -6,7 +6,7 @@
 #include <valgrind/valgrind.h>
 
 typedef struct Thread{
-  ucontext_t uc;
+  ucontext_t* uc;
   thread_t father;
   int is_dead;
   void *retval;
