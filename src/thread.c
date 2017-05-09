@@ -98,8 +98,10 @@ void preempt(int signum){
 
 
 int free_thread(Thread ** thread){
+  /*
   if((*thread) == thmain)
-    return 1;
+    thmain = NULL;
+  */
   //debug_printf("--TEST-- freethread\n");
   if(thread != NULL && *thread != NULL){
     
@@ -116,7 +118,7 @@ int free_thread(Thread ** thread){
     free(*thread);
     *thread = NULL;
     return 0;
-  }
+  }   
   return 1;
 }
 
@@ -164,11 +166,6 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
 						 uc->uc_stack.ss_sp + uc->uc_stack.ss_size);
   new_th->vlg_id = valgrind_stackid;
 
-  //Créer un QueueElt pour chaque file
-  QueueElt *new_elt = malloc(sizeof(QueueElt));
-  new_elt->thread = new_th;
-  QueueElt *new_elt2 = malloc(sizeof(QueueElt));
-  new_elt2->thread = new_th;
   //L'ajouter à la runqueue et à la deletequeue
   //- MASQUER LES SIGNAUX ICI -
   STAILQ_INSERT_TAIL(&runqueue, new_th, next);
@@ -203,15 +200,16 @@ extern int thread_yield(void){
  * si retval est NULL, la valeur de retour est ignorée.
  */
 extern int thread_join(thread_t thread, void **retval){  
-  if(!(thread == NULL || ((Thread*)thread)->is_dead)){
-    // Renseigner le père au thread que l'on va attendre (son)
     Thread * son = (Thread *)thread;
+  if(!(thread == NULL || son->is_dead)){
+    // Renseigner le père au thread que l'on va attendre (son)
     son->father = thread_self();
     // Changer de thread courrant
     run_other_thread(running_thread);
   }
   if(retval != NULL)
     *retval = ((Thread*)thread)->retval;
+  free_thread(&son);
   return 0;  
 }
 
@@ -227,7 +225,9 @@ extern void thread_exit(void *retval){
   }
 
   //run le premier de la fifo
-  run_other_thread(NULL);
+  if(!STAILQ_EMPTY(&runqueue))
+    run_other_thread(NULL);
+  thmain = running_thread;
   exit(0);
 }
 
@@ -250,7 +250,10 @@ void init(void){
 
 
 void end(void){
-  free(thmain->uc->uc_stack.ss_sp);
-  free(thmain->uc);
-  free(thmain);
+  if(thmain != NULL){
+    free(thmain->uc->uc_stack.ss_sp);
+    free(thmain->uc);
+    free(thmain);
+    thmain = NULL;
+  }
 }
