@@ -35,6 +35,7 @@ STAILQ_HEAD(ma_fifo, Thread) runqueue;
 Thread current_thread; // à initialiser ?
 Thread* running_thread = &current_thread;
 Thread* thmain;
+Thread* lasttofree;
 
 /**************************************************/
 /***************** LES FONCTIONS ******************/
@@ -98,10 +99,10 @@ void preempt(int signum){
 
 
 int free_thread(Thread ** thread){
-  /*
+  
   if((*thread) == thmain)
-    thmain = NULL;
-  */
+    return 0;//thmain = NULL;
+  
   //debug_printf("--TEST-- freethread\n");
   if(thread != NULL && *thread != NULL){
     
@@ -227,7 +228,10 @@ extern void thread_exit(void *retval){
   //run le premier de la fifo
   if(!STAILQ_EMPTY(&runqueue))
     run_other_thread(NULL);
-  thmain = running_thread;
+  if(running_thread != thmain){
+    lasttofree = running_thread;
+    debug_printf("--TEST-- exit runqueue vide, pas main: %p\n",lasttofree);
+  }
   exit(0);
 }
 
@@ -236,6 +240,7 @@ void init(void){
   //initialisation du thread courant
   running_thread = malloc(sizeof(struct Thread));
   thmain = running_thread;
+  lasttofree = NULL;
   running_thread->father = NULL;
   running_thread->uc = malloc(sizeof(ucontext_t));
   getcontext(running_thread->uc);
@@ -250,10 +255,19 @@ void init(void){
 
 
 void end(void){
+  debug_printf("--TEST-- Destructeur\n");
+  
   if(thmain != NULL){
     free(thmain->uc->uc_stack.ss_sp);
     free(thmain->uc);
     free(thmain);
+    thmain = NULL;
+  }
+  if(lasttofree != NULL){
+    //free(lasttofree->uc->uc_stack.ss_sp);
+    debug_printf("--TEST-- end %p\n",lasttofree->uc->uc_stack.ss_sp);
+    free(lasttofree->uc);
+    free(lasttofree);
     thmain = NULL;
   }
 }
