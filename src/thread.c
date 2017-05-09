@@ -179,9 +179,10 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   QueueElt *new_elt2 = malloc(sizeof(QueueElt));
   new_elt2->thread = new_th;
   //L'ajouter à la runqueue et à la deletequeue
+  //- MASQUER LES SIGNAUX ICI -
   STAILQ_INSERT_TAIL(&runqueue, new_elt, next);
   STAILQ_INSERT_TAIL(&deletequeue, new_elt2, next);
-
+  //- DEMASQUER LES SIGNAUX ICI -
   return 0;
 }
 
