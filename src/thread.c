@@ -49,7 +49,6 @@ Thread* lasttofree;
   1 si la runqueue est vide
  */
 int run_other_thread(Thread * old_thread){
-
   if(STAILQ_EMPTY(&runqueue))
     return 1;
   
@@ -58,10 +57,12 @@ int run_other_thread(Thread * old_thread){
   STAILQ_REMOVE_HEAD(&runqueue, next); 
 
   /********** PREEMPTION *****************/
+  #ifndef NOPREMPTION
   //alarm(1); 
   //ualarm(PREEMPT_TIME/(running_thread->priority + 1),0);
   ualarm(preemptime(running_thread),0);
   signal(SIGALRM,preempt);
+  #endif
   /********** PREEMPTION *****************/
   //running_thread->state = running;
   

@@ -14,3 +14,7 @@ Programme d'exemple
 
 Pour compiler le programme d'exmple, éxécuter la commance `make ex`. <br>
 Puis pour l'éxécuter, taper `./Programme`.
+
+
+
+Pour compiler sans la préemption make GLOBAL?=-DNOPREMPTION

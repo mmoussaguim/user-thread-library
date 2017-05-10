@@ -14,16 +14,18 @@ TEST = \
 	32-switch-many-join \
 	51-fibonacci \
 
+
+
 vpath %.c src:tests
 vpath % build:build
 
 
 %: %.c
-	$(CC) $(THREAD) -o build/$@ $< $(CFLAGS)
+	$(CC) $(THREAD) $(GLOBAL) -o build/$@ $< $(CFLAGS)
 
 compil-test:$(TEST)
 
-test:compil-test
+test:clean compil-test
 	@echo -e "\033[94m TEST 01-main ...\033[0m"
 	@./build/01-main 
 	@echo -e "\033[94m \nTEST 02-switch ... \033[0m"
