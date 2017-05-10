@@ -5,7 +5,6 @@
 #include <ucontext.h> /* ne compile pas avec -std=c89 ou -std=c99 */
 #include <unistd.h>
 
-
 #ifndef DEBUG
 #define DEBUG 1
 #endif
@@ -49,6 +48,7 @@ Thread* lasttofree;
   1 si la runqueue est vide
  */
 int run_other_thread(Thread * old_thread){
+
   if(STAILQ_EMPTY(&runqueue))
     return 1;
   
@@ -57,12 +57,12 @@ int run_other_thread(Thread * old_thread){
   STAILQ_REMOVE_HEAD(&runqueue, next); 
 
   /********** PREEMPTION *****************/
-  #ifndef NOPREMPTION
+#ifndef NOPREMPTION
   //alarm(1); 
   //ualarm(PREEMPT_TIME/(running_thread->priority + 1),0);
+  //signal(SIGALRM,preempt); 
   ualarm(preemptime(running_thread),0);
-  signal(SIGALRM,preempt);
-  #endif
+#endif
   /********** PREEMPTION *****************/
   //running_thread->state = running;
   
@@ -94,10 +94,18 @@ int preemptime(Thread * thread){
  */
 void preempt(int signum){ 
   debug_printf("--TEST-- preemption du thread %p\n",running_thread);
-  STAILQ_INSERT_TAIL(&runqueue, running_thread, next);
+  insert_runqueue(running_thread);
   run_other_thread(running_thread);
 }
 
+void insert_runqueue(Thread *thread){
+  //Masquer les signaux SIGALRM
+  mask_signal(SIGALRM);
+  //Ajouter à la runqueue
+  STAILQ_INSERT_TAIL(&runqueue, thread, next);
+  //Démasquer les signaux SIGALRM
+  unmask_signal(SIGALRM);
+}
 
 int free_thread(Thread ** thread){
   
@@ -122,6 +130,26 @@ int free_thread(Thread ** thread){
     return 0;
   }   
   return 1;
+}
+
+/* Récupère le masque courrant, ajoute signum, et bloque */
+void mask_signal(int signum){
+  sigset_t set;
+  sigprocmask(SIG_SETMASK,&set,NULL);
+  sigaddset(&set, signum);
+  int rc = sigprocmask(SIG_BLOCK, &set, NULL); 
+  if(rc != 0)
+    perror("sigprocmask BLOCK mal passé\n");
+}
+
+/* Débloque tous les signaux du masque courrant */
+void unmask_signal(int signum){
+  sigset_t set;
+  sigemptyset(&set);
+  sigaddset(&set,signum);
+  int rc = sigprocmask(SIG_UNBLOCK, &set, NULL); 
+  if(rc != 0)
+    perror("sigprocmask UNBLOCK mal passé\n");
 }
 
 extern thread_t thread_self(void){
@@ -168,10 +196,9 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
 						 uc->uc_stack.ss_sp + uc->uc_stack.ss_size);
   new_th->vlg_id = valgrind_stackid;
 
-  //L'ajouter à la runqueue et à la deletequeue
-  //- MASQUER LES SIGNAUX ICI -
-  STAILQ_INSERT_TAIL(&runqueue, new_th, next);
-  //- DEMASQUER LES SIGNAUX ICI -
+  //Ajouter le nouveau thread à la runqueue
+  insert_runqueue(new_th);
+
   return 0;
 }
 
@@ -190,9 +217,7 @@ int thread_setschedprio(Thread * thread, int prio){
 extern int thread_yield(void){
   if(STAILQ_EMPTY(&runqueue))
     return 0;  
-  //- MASQUER LES SIGNAUX ICI -
-  STAILQ_INSERT_TAIL(&runqueue, running_thread, next); 
-  //- DEMASQUER LES SIGNAUX ICI -
+  insert_runqueue(running_thread);
   run_other_thread(running_thread);
   return 0;
 }
@@ -223,7 +248,7 @@ extern void thread_exit(void *retval){
   
   //mettre le father à la fin de la runqueue
   if (father != NULL){ 
-    STAILQ_INSERT_TAIL(&runqueue, father, next);
+    insert_runqueue(father);
   }
 
   //run le premier de la fifo
@@ -252,6 +277,11 @@ void init(void){
   running_thread->priority = DEFAULT_PRIORITY;
   //initialisation de la runqueue et deletequeue
   STAILQ_INIT(&runqueue);
+  //Ajout de l'alarme de préemption pour le premier thread 
+#ifndef NOPREMPTION
+  signal(SIGALRM,preempt); 
+  ualarm(preemptime(running_thread),0);
+#endif
 }
 
 
