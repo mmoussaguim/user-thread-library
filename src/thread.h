@@ -24,5 +24,9 @@ int run_other_thread(Thread * old_thread);
 int preemptime(Thread * thread);
 void preempt(int signum);
 int thread_setschedprio(Thread * thread, int prio);
+void insert_runqueue(Thread *thread);
+void mask_signal(int signum);
+void unmask_signal(int signum);
+
 
 #endif

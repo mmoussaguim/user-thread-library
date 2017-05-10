@@ -1,6 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -g -O0
 THREAD = src/thread.c
+VLG_OPT = --leak-check=full --track-origins=yes --show-reachable=yes
 
 TEST = \
 	01-main \
@@ -49,16 +50,16 @@ test:clean compil-test
 
 
 test-valgrind:compil-test
-	valgrind ./build/01-main 
-	valgrind ./build/02-switch 
-	valgrind ./build/11-join 
-	valgrind ./build/12-join-main 
-	valgrind ./build/21-create-many 2000
-	valgrind ./build/22-create-many-recursive 2000
-	valgrind ./build/23-create-many-once 2000
-	valgrind ./build/31-switch-many 200 150
-	valgrind ./build/32-switch-many-join 200 150
-	valgrind ./build/51-fibonacci 21
+	valgrind $(VLG_OPT) ./build/01-main 
+	valgrind $(VLG_OPT) ./build/02-switch 
+	valgrind $(VLG_OPT) ./build/11-join 
+	valgrind $(VLG_OPT) ./build/12-join-main 
+	valgrind $(VLG_OPT) ./build/21-create-many 2000
+	valgrind $(VLG_OPT) ./build/22-create-many-recursive 2000
+	valgrind $(VLG_OPT) ./build/23-create-many-once 2000
+	valgrind $(VLG_OPT) ./build/31-switch-many 200 150
+	valgrind $(VLG_OPT) ./build/32-switch-many-join 200 150
+	valgrind $(VLG_OPT) ./build/51-fibonacci 21
 
 ex: src/thread.c tests/example.c
 	gcc src/thread.c tests/example.c -o build/Programme -Wall 
