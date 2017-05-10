@@ -49,13 +49,13 @@ test-valgrind:compil-test
 	valgrind ./build/51-fibonacci 21
 
 ex: src/thread.c tests/example.c
-        gcc src/thread.c tests/example.c -o build/Programme -Wall 
+	gcc src/thread.c tests/example.c -o build/Programme -Wall 
 
 testpreempt:
-        gcc src/thread.c tests/preemption.c -o build/Testpreempt -Wall -g -O0
+	gcc src/thread.c tests/preemption.c -o build/Testpreempt -Wall -g -O0
 
 clean:
 	rm -f ./build/*
 	rm -f *.o a.out
-        rm -f Programme
-        rm -f *~ *#
+	rm -f Programme
+	rm -f *~ *#
