@@ -37,6 +37,7 @@ int main()
 
   err = thread_create(&th, thfunc, NULL);
   assert(!err);
-
+  printf("--TEST-- 12 avant exit\n");
   thread_exit((void*) 0xdeadbeef);
+  printf("--TEST-- 12 apres exit\n");
 }

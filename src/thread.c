@@ -108,9 +108,10 @@ void insert_runqueue(Thread *thread){
 }
 
 int free_thread(Thread ** thread){
-  
+  //debug_printf("--TEST-- free_thread\n");
   if((*thread) == thmain)
     return 0;//thmain = NULL;
+  //debug_printf("--TEST-- free_thread autre que main\n");
   
   //debug_printf("--TEST-- freethread\n");
   if(thread != NULL && *thread != NULL){
@@ -257,6 +258,8 @@ extern void thread_exit(void *retval){
   if(running_thread != thmain){
     lasttofree = running_thread;
     debug_printf("--TEST-- exit runqueue vide, pas main: %p\n",lasttofree);
+    debug_printf("--TEST-- main->uc: %p\n",thmain->uc);
+    setcontext(thmain->uc);
   }
   exit(0);
 }
@@ -300,5 +303,5 @@ void end(void){
     free(lasttofree->uc);
     free(lasttofree);
     thmain = NULL;
-  }
+    }
 }
