@@ -227,6 +227,7 @@ extern int thread_join(thread_t thread, void **retval){
 }
 
 extern void thread_exit(void *retval){
+  //debug_printf("--TEST-- exit\n");
   //écrit dans retval avant de free
   running_thread->retval = retval;
   running_thread->is_dead = 1;
@@ -242,7 +243,8 @@ extern void thread_exit(void *retval){
     run_other_thread(NULL);
   if(running_thread != thmain){
     lasttofree = running_thread;
-    setcontext(thmain->uc);
+    //debug_printf("--TEST-- exit thmain: %p\n",thmain);
+    //setcontext(thmain->uc); // ERREUR VIENT D'ICI 
   }
   exit(0);
 }

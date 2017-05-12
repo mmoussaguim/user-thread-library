@@ -20,7 +20,6 @@ static void * thfunc(void *dummy __attribute__((unused)))
 {
   void *res;
   int err;
-
   err = thread_join(thmain, &res);
   assert(!err);
   assert(res == (void*) 0xdeadbeef);
@@ -37,7 +36,5 @@ int main()
 
   err = thread_create(&th, thfunc, NULL);
   assert(!err);
-  printf("--TEST-- 12 avant exit\n");
   thread_exit((void*) 0xdeadbeef);
-  printf("--TEST-- 12 apres exit\n");
 }
