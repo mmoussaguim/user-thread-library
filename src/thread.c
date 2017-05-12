@@ -4,7 +4,7 @@
 #include <sys/queue.h>
 #include <ucontext.h> /* ne compile pas avec -std=c89 ou -std=c99 */
 #include <unistd.h>
-
+#include "thread_mutex.c"
 #ifndef DEBUG
 #define DEBUG 1
 #endif

@@ -1,7 +1,9 @@
-#ifndef __THREAD_H__
-#define __THREAD_H__
+#ifndef __INTERFACE_H__
+#define __INTERFACE_H__
 
 #ifndef USE_PTHREAD
+#include "queue.h"
+#include "thread.h"
 
 /* identifiant de thread
  * NB: pourra être un entier au lieu d'un pointeur si ca vous arrange,
@@ -9,6 +11,7 @@
  *     (consommation mémoire, cout d'allocation, ...).
  */
 typedef void * thread_t;
+typedef struct Thread Thread;
 
 /* recuperer l'identifiant du thread courant.
  */
@@ -41,8 +44,9 @@ extern void thread_exit(void *retval) __attribute__ ((__noreturn__));
 
 /* Interface possible pour les mutex  */
 typedef struct thread_mutex { 
-  int state; 
-  thread_t owner;
+  int is_destroyed; 
+  Thread* owner;
+  STAILQ_HEAD(fifo_mutex, Thread) waitqueue; //file d'attente de threads qui veulent ce verrou
 } thread_mutex_t;
 
 int thread_mutex_init(thread_mutex_t *mutex);

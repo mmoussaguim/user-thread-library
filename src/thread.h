@@ -1,5 +1,5 @@
-#ifndef THREAD_H
-#define THREAD_H
+#ifndef __THREAD_H__
+#define __THREAD_H__
 
 #include <ucontext.h>
 #include "interface.h"
@@ -15,7 +15,6 @@ typedef struct Thread{
   int priority; // 0 <= priority <= 20
   STAILQ_ENTRY(Thread) next; //for runqueue
 } Thread;
-
 
 
 void init(void) __attribute__((constructor));
