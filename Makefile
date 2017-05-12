@@ -1,6 +1,7 @@
 CC = gcc
 CFLAGS = -Wall -g -O0
-THREAD = src/thread.c
+##THREAD = -DUSE_PTHREAD -lpthread ## OU src/thread.c
+THREAD = src/thread.c ## OU make test THREAD=-DUSE_PTHREAD LIB=-lpthread
 VLG_OPT = --leak-check=full --track-origins=yes --show-reachable=yes
 
 TEST = \
@@ -22,7 +23,7 @@ vpath % build:build
 
 
 %: %.c
-	$(CC) $(THREAD) $(GLOBAL) -o build/$@ $< $(CFLAGS)
+	$(CC) $(GLOBAL) $(THREAD) -o build/$@ $< $(CFLAGS) $(LIB)
 
 compil-test:$(TEST)
 
@@ -38,13 +39,13 @@ test:clean compil-test
 	@echo -e	 "\033[94m \nTEST 21-create-many (2000) ... \033[0m"
 	@./build/21-create-many 2000
 	@echo -e "\033[94m \nTEST 22-create-many-recurive (2000) ... \033[0m"
-	@./build/22-create-many-recursive 2000
+	@./build/22-create-many-recursive 500
 	@echo -e "\033[94m \nTEST 23-create-many-once (2000) ... \033[0m"	
 	@./build/23-create-many-once 2000
-	@echo -e "\033[94m \nTEST 31-switch-many (2000 1500) ... \033[0m"
-	@./build/31-switch-many 2000 1500
-	@echo -e "\033[94m \nTEST 32-switch-many (2000 1500) ... \033[0m"
-	@./build/32-switch-many-join 2000 1500
+	@echo -e "\033[94m \nTEST 31-switch-many (1000 500) ... \033[0m"
+	@./build/31-switch-many 1000 500
+	@echo -e "\033[94m \nTEST 32-switch-many (500 250) ... \033[0m"
+	@./build/32-switch-many-join 500 250
 	@echo -e "\033[94m \nTEST 51-fibonacci ... \033[0m"
 	@./build/51-fibonacci 27
 
