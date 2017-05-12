@@ -37,3 +37,12 @@ acces atomique: type __sync_lock_test_and_set(type *ptr,type value,....)
 join: detruire de thread a ce moment là
 
 thread détachés
+
+
+---------------------------------
+mutex pas dattente active (cf join) 
++ justifier champs owner
+
+prempt: ameliorer test (temps)
+
+tmp: renommer
