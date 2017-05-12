@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "../src/thread.h"
+#include <stdlib.h>
 
 /* test de switchs.
  *
@@ -60,5 +61,6 @@ int main()
   assert(res == NULL);
 
   printf("main terminé\n");
+  mem_use();
   return 0;
 }

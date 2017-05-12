@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "../src/thread.h"
+#include <stdlib.h>
 
 /* test du join, avec ou sans thread_exit.
  *
@@ -44,5 +45,6 @@ int main()
   assert(res == (void*) 0xbeefdead);
 
   printf("join OK\n");
+  mem_use();
   return 0;
 }

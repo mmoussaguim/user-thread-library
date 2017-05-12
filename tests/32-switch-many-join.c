@@ -59,5 +59,6 @@ int main(int argc, char *argv[])
   thfunc((void*) nbth);
 
   printf("%ld threads créés et détruits\n", nbth);
+  mem_use();
   return 0;
 }

@@ -45,5 +45,6 @@ int main(int argc, char *argv[])
   thfunc((void*) nb);
 
   printf("%ld threads créés et détruits récursivement\n", nb);
+  mem_use();
   return 0;
 }

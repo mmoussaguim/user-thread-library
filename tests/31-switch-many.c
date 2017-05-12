@@ -67,6 +67,6 @@ int main(int argc, char *argv[])
 	 nbyield, nbth, us);
 
   free(ths);
-
+  mem_use();
   return 0;
 }

@@ -53,6 +53,6 @@ int main(int argc, char *argv[])
   value = atoi(argv[1]);
   res = (unsigned long) fibo((void *)value);
   printf("fibo de %ld = %ld\n", value, res);
-
+  mem_use();
   return 0;
 }

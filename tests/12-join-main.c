@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "../src/thread.h"
+#include <stdlib.h>
 
 /* test du join du main par un fils.
  *
@@ -37,4 +38,5 @@ int main()
   err = thread_create(&th, thfunc, NULL);
   assert(!err);
   thread_exit((void*) 0xdeadbeef);
+  mem_use();
 }

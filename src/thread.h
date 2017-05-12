@@ -5,6 +5,8 @@
 #include "interface.h"
 #include <valgrind/valgrind.h>
 #include <sys/queue.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 typedef struct Thread{
   ucontext_t* uc;
@@ -27,6 +29,7 @@ int thread_setschedprio(Thread * thread, int prio);
 void insert_runqueue(Thread *thread);
 void mask_signal(int signum);
 void unmask_signal(int signum);
+void mem_use();
 
 
 #endif

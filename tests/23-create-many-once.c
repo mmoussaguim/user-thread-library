@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 {
   thread_t *th;
   int err, i, nb;
+  
 
   if (argc < 2) {
     printf("argument manquant: nombre de threads\n");
@@ -58,5 +59,6 @@ int main(int argc, char *argv[])
   free(th);
 
   printf("%d threads créés et détruits\n", nb);
+  mem_use();
   return 0;
 }

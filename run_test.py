@@ -10,7 +10,7 @@ def runtime(name, size1, size2, step, step2):
     for j in l2:
         os.system('rm time.txt')
         for i in l:
-            a = "(time ./"+name+" "+str(i)+" "+str(j)+") 2> tmp.txt 1>/dev/null && awk \'/real/ {print substr($2,3,5)}\' tmp.txt >> time.txt"
+            a = "(time ./build/"+name+" "+str(i)+" "+str(j)+") 2> tmp.txt 1>/dev/null && awk \'/real/ {print substr($2,3,5)}\' tmp.txt >> time.txt"
             os.system(a)
         
         with open('time.txt') as f:
