@@ -14,7 +14,7 @@
 
 
 #define STACK_SIZE 1024
-#define PREEMPT_TIME 500000 // en usec
+#define PREEMPT_TIME 8000 // en usec
 #define DEFAULT_PRIORITY 10
 #define MAX_PRIO 20
 #define MIN_PRIO 0
@@ -48,34 +48,25 @@ Thread* lasttofree;
   1 si la runqueue est vide
  */
 int run_other_thread(Thread * old_thread){
-
+  mask_signal(SIGALRM);
   if(STAILQ_EMPTY(&runqueue))
     return 1;
   
   Thread *run_elt = (Thread *) STAILQ_FIRST(&runqueue);
   running_thread = run_elt;
   STAILQ_REMOVE_HEAD(&runqueue, next); 
+  unmask_signal(SIGALRM);
 
   /********** PREEMPTION *****************/
 #ifndef NOPREMPTION
-  //alarm(1); 
-  //ualarm(PREEMPT_TIME/(running_thread->priority + 1),0);
-  //signal(SIGALRM,preempt); 
   ualarm(preemptime(running_thread),0);
 #endif
   /********** PREEMPTION *****************/
-  //running_thread->state = running;
   
   if(old_thread != NULL)
     swapcontext(old_thread->uc,running_thread->uc);
   else 
     setcontext(running_thread->uc);
-
-  /********** PREEMPTION *****************/   //inutile ??
-  //alarm(1); 
-  //ualarm(PREEMPT_TIME,0);
-  //signal(SIGALRM,preempt);
-  /********** PREEMPTION *****************/
 
   return 0;
 }
@@ -83,7 +74,6 @@ int run_other_thread(Thread * old_thread){
 int preemptime(Thread * thread){
   if(thread == NULL)
     return -1;
-  //debug_printf("--TEST-- preemptime: %d us\n",PREEMPT_TIME + ((PREEMPT_TIME * (10 - thread->priority))/10) / 2);
   return PREEMPT_TIME + ((PREEMPT_TIME * (10 - thread->priority))/10) / 2;
 }
 
@@ -93,7 +83,6 @@ int preemptime(Thread * thread){
   A passer en argument de signal dans run_other_thread
  */
 void preempt(int signum){ 
-  debug_printf("--TEST-- preemption du thread %p\n",running_thread);
   insert_runqueue(running_thread);
   run_other_thread(running_thread);
 }
@@ -108,23 +97,18 @@ void insert_runqueue(Thread *thread){
 }
 
 int free_thread(Thread ** thread){
-  //debug_printf("--TEST-- free_thread\n");
   if((*thread) == thmain)
     return 0;//thmain = NULL;
-  //debug_printf("--TEST-- free_thread autre que main\n");
-  
-  //debug_printf("--TEST-- freethread\n");
+
   if(thread != NULL && *thread != NULL){
     
     if((*thread)->uc->uc_stack.ss_sp != NULL){
-      //debug_printf("--TEST-- freethread %p\n",(*thread)->uc.uc_stack.ss_sp);
       free((*thread)->uc->uc_stack.ss_sp);
       (*thread)->uc->uc_stack.ss_sp = NULL;
 
 
       free((*thread)->uc);
-      }
-    //debug_printf("--TEST-- freethread thread:%p\n",*thread);
+    }
     
     free(*thread);
     *thread = NULL;
@@ -154,7 +138,6 @@ void unmask_signal(int signum){
 }
 
 extern thread_t thread_self(void){
-  //debug_printf("--TEST-- self\n");
   return running_thread;
 }
 
@@ -175,8 +158,6 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   getcontext(uc); //TODO : attraper l'erreur 
   uc->uc_stack.ss_size = 64*STACK_SIZE;
   uc->uc_stack.ss_sp = malloc(uc->uc_stack.ss_size);
-  //static char stack[64*STACK_SIZE];
-  //uc.uc_stack.ss_sp = stack;
 
   makecontext(uc, (void(*)(void))*tmp, 2,func, funcarg);
   uc->uc_link = NULL;
@@ -257,8 +238,6 @@ extern void thread_exit(void *retval){
     run_other_thread(NULL);
   if(running_thread != thmain){
     lasttofree = running_thread;
-    debug_printf("--TEST-- exit runqueue vide, pas main: %p\n",lasttofree);
-    debug_printf("--TEST-- main->uc: %p\n",thmain->uc);
     setcontext(thmain->uc);
   }
   exit(0);
@@ -274,8 +253,6 @@ void init(void){
   running_thread->uc = malloc(sizeof(ucontext_t));
   getcontext(running_thread->uc);
   running_thread->uc->uc_stack.ss_size = 64*STACK_SIZE;
-  // static char stack[64*STACK_SIZE];
-  //running_thread->uc.uc_stack.ss_sp = stack;
   running_thread->uc->uc_stack.ss_sp = malloc(running_thread->uc->uc_stack.ss_size);
   running_thread->priority = DEFAULT_PRIORITY;
   //initialisation de la runqueue et deletequeue
@@ -298,8 +275,6 @@ void end(void){
     thmain = NULL;
   }
   if(lasttofree != NULL){
-    //free(lasttofree->uc->uc_stack.ss_sp);
-    debug_printf("--TEST-- end %p\n",lasttofree->uc->uc_stack.ss_sp);
     free(lasttofree->uc);
     free(lasttofree);
     thmain = NULL;
