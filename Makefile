@@ -25,7 +25,7 @@ vpath % build:$(PATH_BUILD)
 
 
 %: %.c
-	$(CC) $(GLOBAL) $(THREAD) -o $(PATH_BUILD)/$@ $< $(CFLAGS) $(LIB)
+	$(CC) $(GLOBAL) $(THREAD) src/mem_use.c -o $(PATH_BUILD)/$@ $< $(CFLAGS) $(LIB)
 
 compil-test:$(TEST)
 
