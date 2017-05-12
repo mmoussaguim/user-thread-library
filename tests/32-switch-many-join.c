@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
-#include <stdlib.h>
+#include "../src/mem_use.h"
 #include <sys/time.h>
 #include "../src/thread.h"
 

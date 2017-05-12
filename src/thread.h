@@ -5,8 +5,6 @@
 #include "interface.h"
 #include <valgrind/valgrind.h>
 #include <sys/queue.h>
-#include <unistd.h>
-#include <sys/types.h>
 
 typedef struct Thread{
   ucontext_t* uc;

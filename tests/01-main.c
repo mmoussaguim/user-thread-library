@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "../src/thread.h"
-#include <stdlib.h>
+#include "../src/mem_use.h"
 
 /* test du thread_self et yield du main seul.
  *

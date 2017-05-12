@@ -270,13 +270,6 @@ void init(void){
 #endif
 }
 
-void mem_use(){
-  pid_t pid = getpid();
-  char test[1024];
-  sprintf(test,"cat /proc/%d/status | awk '/VmSize/ {print $2}' >> mem_use.txt",pid);
-  system(test);
-}
-
 void end(void){
   debug_printf("--TEST-- Destructeur\n");
   

@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
-#include <stdlib.h>
+#include "../src/mem_use.h"
 #include "../src/thread.h"
 
 /* test de plein de create, puis plein de join quand ils ont tous fini

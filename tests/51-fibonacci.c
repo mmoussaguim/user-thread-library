@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <stdlib.h>
+#include "../src/mem_use.h"
 #include <assert.h>
 #include "../src/thread.h"
 
