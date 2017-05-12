@@ -1,10 +1,12 @@
-CC = gcc
-CFLAGS = -Wall -g -O0
+CC       = gcc
+CFLAGS   = -Wall -g -O0
 ##THREAD = -DUSE_PTHREAD -lpthread ## OU src/thread.c
-THREAD = src/thread.c ## OU make test THREAD=-DUSE_PTHREAD LIB=-lpthread
-VLG_OPT = --leak-check=full --track-origins=yes --show-reachable=yes
+THREAD   = src/thread.c
+## OU make test THREAD=-DUSE_PTHREAD LIB=-lpthread PATH_BUILD=pthread
+VLG_OPT  = --leak-check=full --track-origins=yes --show-reachable=yes
+PATH_BUILD = build
 
-TEST = \
+TEST     = \
 	01-main \
 	02-switch \
 	11-join \
@@ -19,57 +21,58 @@ TEST = \
 
 
 vpath %.c src:tests
-vpath % build:build
+vpath % build:$(PATH_BUILD)
 
 
 %: %.c
-	$(CC) $(GLOBAL) $(THREAD) -o build/$@ $< $(CFLAGS) $(LIB)
+	$(CC) $(GLOBAL) $(THREAD) -o $(PATH_BUILD)/$@ $< $(CFLAGS) $(LIB)
 
 compil-test:$(TEST)
 
-test:clean compil-test
+test:compil-test
 	@echo -e "\n \033[94m TEST 01-main ...\033[0m"
-	@./build/01-main 
+	@./$(PATH_BUILD)/01-main 
 	@echo -e "\033[94m \nTEST 02-switch ... \033[0m"
-	@./build/02-switch 
+	@./$(PATH_BUILD)/02-switch 
 	@echo -e "\n \033[94mTEST 11-join ... \033[0m"
-	@./build/11-join 
+	@./$(PATH_BUILD)/11-join 
 	@echo  -e "\n \033[94mTEST 12-join-main ... \033[0m"
-	--@./build/12-join-main 
+	--@./$(PATH_BUILD)/12-join-main 
 	@echo -e	 "\033[94m \nTEST 21-create-many (2000) ... \033[0m"
-	@./build/21-create-many 2000
+	@./$(PATH_BUILD)/21-create-many 2000
 	@echo -e "\033[94m \nTEST 22-create-many-recurive (2000) ... \033[0m"
-	@./build/22-create-many-recursive 500
+	@./$(PATH_BUILD)/22-create-many-recursive 500
 	@echo -e "\033[94m \nTEST 23-create-many-once (2000) ... \033[0m"	
-	@./build/23-create-many-once 2000
+	@./$(PATH_BUILD)/23-create-many-once 2000
 	@echo -e "\033[94m \nTEST 31-switch-many (1000 500) ... \033[0m"
-	@./build/31-switch-many 1000 500
+	@./$(PATH_BUILD)/31-switch-many 1000 500
 	@echo -e "\033[94m \nTEST 32-switch-many (500 250) ... \033[0m"
-	@./build/32-switch-many-join 500 250
+	@./$(PATH_BUILD)/32-switch-many-join 500 250
 	@echo -e "\033[94m \nTEST 51-fibonacci ... \033[0m"
-	@./build/51-fibonacci 27
+	@./$(PATH_BUILD)/51-fibonacci 27
 
 
 test-valgrind:compil-test
-	valgrind $(VLG_OPT) ./build/01-main 
-	valgrind $(VLG_OPT) ./build/02-switch 
-	valgrind $(VLG_OPT) ./build/11-join 
-	valgrind $(VLG_OPT) ./build/12-join-main 
-	valgrind $(VLG_OPT) ./build/21-create-many 2000
-	valgrind $(VLG_OPT) ./build/22-create-many-recursive 2000
-	valgrind $(VLG_OPT) ./build/23-create-many-once 2000
-	valgrind $(VLG_OPT) ./build/31-switch-many 200 150
-	valgrind $(VLG_OPT) ./build/32-switch-many-join 200 150
-	valgrind $(VLG_OPT) ./build/51-fibonacci 21
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/01-main 
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/02-switch 
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/11-join 
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/12-join-main 
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/21-create-many 2000
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/22-create-many-recursive 2000
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/23-create-many-once 2000
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/31-switch-many 200 150
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/32-switch-many-join 200 150
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/51-fibonacci 21
 
 ex: src/thread.c tests/example.c
-	gcc src/thread.c tests/example.c -o build/Programme -Wall 
+	gcc src/thread.c tests/example.c -o $(PATH_BUILD)/Programme -Wall 
 
 testpreempt:
-	gcc src/thread.c tests/preemption.c -o build/Testpreempt -Wall -g -O0
+	gcc src/thread.c tests/preemption.c -o $(PATH_BUILD)/Testpreempt -Wall -g -O0
 
 clean:
 	rm -f ./build/*
 	rm -f *.o a.out
 	rm -f Programme
 	rm -f *~ *#
+	rm -f ./pthread/*
