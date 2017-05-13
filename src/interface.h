@@ -45,7 +45,7 @@ extern void thread_exit(void *retval) __attribute__ ((__noreturn__));
 /* Interface possible pour les mutex  */
 typedef struct thread_mutex { 
   int is_destroyed; 
-  Thread* owner;
+  Thread* owner; // permet de s'assurer que seul le thread qui détient le mutex peut le relacher
   STAILQ_HEAD(fifo_mutex, Thread) waitqueue; //file d'attente de threads qui veulent ce verrou
 } thread_mutex_t;
 

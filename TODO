@@ -1,6 +1,4 @@
 *reflechir a comment ameliorer la performance du programme (fibo -> ~32)
-* mutex: supprimer l'attente active:  endormir le thread bloqué et le réveiller quand le verrou est disponible (cf join)
-*mutex: justifier le champs owner
 *améliorer le test de la preemption (afficher le temps d'éxécution de haque thread par exemple)
-*renommer la fonction tmp pour que son nom ait un sens ^^
 *makefile: mkdir build
+*rapport

@@ -147,7 +147,7 @@ extern thread_t thread_self(void){
 
 
 // fonction englobante pour connnaitre la fin d'execution du thread
-void *tmp(void* (*func)(void*), void *arg){
+void *englob(void* (*func)(void*), void *arg){
   void * retval = func(arg);
   if (!running_thread->is_dead)
     thread_exit(retval);
@@ -163,7 +163,7 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   uc->uc_stack.ss_size = 64*STACK_SIZE;
   uc->uc_stack.ss_sp = malloc(uc->uc_stack.ss_size);
 
-  makecontext(uc, (void(*)(void))*tmp, 2,func, funcarg);
+  makecontext(uc, (void(*)(void))*englob, 2,func, funcarg);
   uc->uc_link = NULL;
   
   //Créer un Thread
