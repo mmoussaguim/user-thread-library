@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "thread.h"
+#include <sys/queue.h>
 
 Thread* running_thread;
+STAILQ_HEAD(ma_fifo, Thread) runqueue;
 
 /* Returns 0 if success, else -1 */
 int thread_mutex_init(thread_mutex_t *mutex){

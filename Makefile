@@ -17,6 +17,7 @@ TEST     = \
 	31-switch-many \
 	32-switch-many-join \
 	51-fibonacci \
+	61-mutex \
 
 
 
@@ -48,8 +49,10 @@ test:compil-test
 	@./$(PATH_BUILD)/31-switch-many 1000 500
 	@echo -e "\033[94m \nTEST 32-switch-many (500 250) ... \033[0m"
 	@./$(PATH_BUILD)/32-switch-many-join 500 250
-	@echo -e "\033[94m \nTEST 51-fibonacci ... \033[0m"
+	@echo -e "\033[94m \nTEST 51-fibonacci (27) ... \033[0m"
 	@./$(PATH_BUILD)/51-fibonacci 27
+	@echo -e "\033[94m \nTEST 61-mutex (42) ... \033[0m"
+	@./$(PATH_BUILD)/61-mutex 42
 
 
 test-valgrind:compil-test
@@ -63,6 +66,7 @@ test-valgrind:compil-test
 	valgrind $(VLG_OPT) ./$(PATH_BUILD)/31-switch-many 200 150
 	valgrind $(VLG_OPT) ./$(PATH_BUILD)/32-switch-many-join 200 150
 	valgrind $(VLG_OPT) ./$(PATH_BUILD)/51-fibonacci 21
+	valgrind $(VLG_OPT) ./$(PATH_BUILD)/61-mutex
 
 ex: src/thread.c tests/example.c
 	gcc src/thread.c tests/example.c -o $(PATH_BUILD)/Programme -Wall 
