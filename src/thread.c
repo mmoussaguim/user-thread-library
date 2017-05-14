@@ -118,6 +118,7 @@ int free_thread(Thread ** thread){
 
 /* Récupère le masque courant, ajoute signum, et bloque */
 void mask_signal(int signum){
+#ifndef NOPREMPTION
   sigset_t set;
   //Créer un set avec signum uniquement
   sigemptyset(&set);
@@ -126,10 +127,12 @@ void mask_signal(int signum){
   int rc = sigprocmask(SIG_BLOCK, &set, NULL); 
   if(rc != 0)
     perror("sigprocmask BLOCK mal passé\n");
+#endif
 }
 
 /* Débloque tous les signaux du masque courrant */
 void unmask_signal(int signum){
+#ifndef NOPREMPTION
   sigset_t set;
   //Créer un set avec signum uniquement
   sigemptyset(&set);
@@ -138,6 +141,7 @@ void unmask_signal(int signum){
   int rc = sigprocmask(SIG_UNBLOCK, &set, NULL); 
   if(rc != 0)
     perror("sigprocmask UNBLOCK mal passé\n");
+#endif
 }
 
 extern thread_t thread_self(void){

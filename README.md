@@ -35,7 +35,8 @@ Les commandes pour utiliser le projet depuis sa racine sont:
 
 #### Fibonacci
 Pour le test de Fibonacci préférer des valeurs inférieures à 30. <br>
-Le test retourne rapidement jusqu'à 26, il devient beaucoup plus lent au-delà.
+Le test retourne rapidement jusqu'à 26, il devient beaucoup plus lent au-delà. <br>
+Sans la préemption il tourne rapidement jusqu'à 30 (`GLOBAL?=-DNOPREMPTION`)
 
 #### Préemption
 
@@ -46,7 +47,7 @@ Attention à bien s'assurer qu'un `printf` est présent dans la fonction `preemp
 #### Programme d'exemple
 
 Pour compiler le programme d'exemple, exécuter la commance `make ex`. <br>
-Puis pour l'éxécuter, taper `./Programme`.
+Puis pour l'éxécuter, taper `./build/Programme`.
 
 #### Options de compilation
 
