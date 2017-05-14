@@ -41,6 +41,7 @@ Sans la préemption il tourne rapidement jusqu'à 30 (`GLOBAL?=-DNOPREMPTION`)
 #### Préemption et priorités
 
 Pour effectuer un test sur la préemption: compiler avec `make testpreempt` puis exécuter avec `./build/Testpreempt <nb thread>` <br>
+Attention à ne pas choisir un nombre de thread trop important pour ne pas ralentir inutilement le programme (choisir un nombre de préférence entre 0 et 20)
 
 #### Programme d'exemple
 
