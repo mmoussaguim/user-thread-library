@@ -19,15 +19,9 @@
 
 static void * thfunc(void *dummy __attribute__((unused)))
 {
-  /*printf("Je dors\n");
-  sleep(2);
-  //usleep(200000);
-  printf("J'ai bien dormis\n");
-  sleep(2);
-  printf("J'ai bien dormis encore\n");
-  thread_exit(NULL);*/
-  while(1){
-  }
+  int j;
+  for(j = 0; j < 100000000; j++);
+  return NULL;
 }
 
 int main(int argc, char *argv[])
@@ -55,6 +49,9 @@ int main(int argc, char *argv[])
   }
   thread_setschedprio(th[0],0);
   thread_setschedprio(th[1],20);
+  int j;
+  for(j = 2; j < nb-1; j++)
+    thread_setschedprio(th[j],j%20);
 
   /* on leur passe la main, ils vont tous terminer */
   for(i=0; i<nb; i++) {

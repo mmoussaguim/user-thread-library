@@ -62,6 +62,17 @@ int run_other_thread(Thread * old_thread){
 #endif
   /********** PREEMPTION *****************/
   
+#ifdef TESTTEMPS
+  running_thread->nb_exec++;
+  gettimeofday(&(running_thread->current_tps_exec), NULL);
+  if(old_thread != NULL){
+    old_thread->total_tps_exec += (running_thread->current_tps_exec.tv_sec * 1000000
+				   + running_thread->current_tps_exec.tv_usec)
+                                   - (old_thread->current_tps_exec.tv_sec * 1000000
+				   + old_thread->current_tps_exec.tv_usec);   
+  }
+#endif
+
   if(old_thread != NULL)
     swapcontext(old_thread->uc,running_thread->uc);
   else 
@@ -177,6 +188,11 @@ extern int thread_create(thread_t *newthread, void *(*func)(void *), void *funca
   new_th->is_dead = 0; 
   new_th->priority = DEFAULT_PRIORITY;
 
+#ifdef TESTTEMPS
+  new_th->nb_exec = 0;
+  new_th->total_tps_exec = 0;
+#endif
+
   //Référencer ce thread sur newthread
   *newthread = new_th;
   
@@ -239,6 +255,10 @@ extern void thread_exit(void *retval){
   if (father != NULL){ 
     insert_runqueue(father);
   }
+
+#ifdef TESTTEMPS
+  printf("Le thread %p de priotité %d s'est exécuté %d fois prendant %lld usec, soit %lld usec en moyenne\n",running_thread,running_thread->priority,running_thread->nb_exec,running_thread->total_tps_exec,running_thread->total_tps_exec / running_thread->nb_exec);
+#endif
 
   //run le premier de la fifo
   if(!STAILQ_EMPTY(&runqueue))
@@ -332,6 +352,11 @@ void init(void){
   running_thread->uc->uc_stack.ss_size = 64*STACK_SIZE;
   running_thread->uc->uc_stack.ss_sp = malloc(running_thread->uc->uc_stack.ss_size);
   running_thread->priority = DEFAULT_PRIORITY;
+#ifdef TESTTEMPS
+  running_thread->nb_exec = 1;
+  running_thread->total_tps_exec = 0;
+  gettimeofday(&(running_thread->current_tps_exec), NULL);
+#endif
   //initialisation de la runqueue et deletequeue
   STAILQ_INIT(&runqueue);
   //Ajout de l'alarme de préemption pour le premier thread 

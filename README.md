@@ -38,11 +38,9 @@ Pour le test de Fibonacci préférer des valeurs inférieures à 30. <br>
 Le test retourne rapidement jusqu'à 26, il devient beaucoup plus lent au-delà. <br>
 Sans la préemption il tourne rapidement jusqu'à 30 (`GLOBAL?=-DNOPREMPTION`)
 
-#### Préemption
+#### Préemption et priorités
 
-Pour effectuer un test sur la préemption: compiler avec `make testpreempt` puis exécuter avec `./build/Testpreempt` <br>
-Ce test est constitué d'une boucle infinie, il ne termine donc pas. <br>
-Attention à bien s'assurer qu'un `printf` est présent dans la fonction `preempt` de `thread.c`, sinon le programme semblera tourner dans le vide.
+Pour effectuer un test sur la préemption: compiler avec `make testpreempt` puis exécuter avec `./build/Testpreempt <nb thread>` <br>
 
 #### Programme d'exemple
 

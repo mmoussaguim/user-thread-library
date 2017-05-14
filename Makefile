@@ -18,6 +18,7 @@ TEST     = \
 	32-switch-many-join \
 	51-fibonacci \
 	61-mutex \
+	preemption \
 
 
 
@@ -72,7 +73,7 @@ ex: src/thread.c tests/example.c
 	gcc src/thread.c tests/example.c -o $(PATH_BUILD)/Programme -Wall 
 
 testpreempt:
-	gcc src/thread.c tests/preemption.c -o $(PATH_BUILD)/Testpreempt -Wall -g -O0
+	gcc src/thread.c -DTESTTEMPS tests/preemption.c -o $(PATH_BUILD)/Testpreempt -Wall -g -O0 
 
 clean:
 	rm -f ./build/*
