@@ -92,5 +92,6 @@ int main(int argc, char *argv[])
   else {
       printf("Le résultat est INCORRECT: %d * 1000 != %d\n", nb, counter);
   }
+  mem_use();
   return 0;
 }

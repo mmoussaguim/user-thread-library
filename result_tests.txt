@@ -1,0 +1,47 @@
+Test1 (thread.h): 4292
+
+real	0m0.005s
+user	0m0.001s
+sys	0m0.002s
+
+Test1 (pthread): 6320
+
+real	0m0.006s
+user	0m0.002s
+sys	0m0.003s
+
+Test2 (thread.h): 4424
+
+real	0m0.006s
+user	0m0.002s
+sys	0m0.004s
+
+Test2 (pthread): 98716
+
+real	0m0.007s
+user	0m0.003s
+sys	0m0.004s
+
+Test11 (thread.h): 4488
+
+real	0m0.006s
+user	0m0.002s
+sys	0m0.004s
+
+Test11 (pthread): 90516
+
+real	0m0.006s
+user	0m0.002s
+sys	0m0.004s
+
+Test12 (thread.h): 
+
+real	0m0.001s
+user	0m0.000s
+sys	0m0.001s
+
+Test12 (pthread): 
+
+real	0m0.002s
+user	0m0.000s
+sys	0m0.001s
