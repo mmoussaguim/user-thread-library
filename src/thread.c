@@ -4,7 +4,6 @@
 #include <sys/queue.h>
 #include <ucontext.h> /* ne compile pas avec -std=c89 ou -std=c99 */
 #include <unistd.h>
-//#include "thread_mutex.c"
 #ifndef DEBUG
 #define DEBUG 1
 #endif
@@ -31,7 +30,7 @@ typedef struct QueueElt{
 STAILQ_HEAD(ma_fifo, Thread) runqueue;
 
 //Pointeur du thread en exécution
-Thread current_thread; // à initialiser ?
+Thread current_thread; 
 Thread* running_thread = &current_thread;
 Thread* thmain;
 Thread* lasttofree;
@@ -227,7 +226,6 @@ extern int thread_join(thread_t thread, void **retval){
 }
 
 extern void thread_exit(void *retval){
-  //debug_printf("--TEST-- exit\n");
   //écrit dans retval avant de free
   running_thread->retval = retval;
   running_thread->is_dead = 1;
@@ -243,7 +241,6 @@ extern void thread_exit(void *retval){
     run_other_thread(NULL);
   if(running_thread != thmain){
     lasttofree = running_thread;
-    //debug_printf("--TEST-- exit thmain: %p\n",thmain);
     //setcontext(thmain->uc); // ERREUR VIENT D'ICI 
   }
   exit(0);
@@ -271,7 +268,7 @@ int thread_mutex_destroy(thread_mutex_t *mutex){
   if(mutex != NULL){
     mutex->is_destroyed = 1;
     mutex->owner = NULL;
-    //vider la waitqueue? 
+    // La waitqueue est sensée etre vide, on ne la vide donc pas
     return 0;
   }
   return -1;
@@ -340,9 +337,7 @@ void init(void){
 #endif
 }
 
-void end(void){
-  debug_printf("--TEST-- Destructeur\n");
-  
+void end(void){  
   if(thmain != NULL){
     free(thmain->uc->uc_stack.ss_sp);
     free(thmain->uc);
