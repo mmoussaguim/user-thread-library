@@ -257,7 +257,7 @@ extern void thread_exit(void *retval){
   }
 
 #ifdef TESTTEMPS
-  printf("Le thread %p de priotité %d s'est exécuté %d fois prendant %lld usec, soit %lld usec en moyenne\n",running_thread,running_thread->priority,running_thread->nb_exec,running_thread->total_tps_exec,running_thread->total_tps_exec / running_thread->nb_exec);
+  printf("Le thread %p de priotité \033[35;01m%d\033[00m s'est exécuté %d fois prendant %lld usec, soit \033[33;01m%lld\033[00m usec en moyenne\n",running_thread,running_thread->priority,running_thread->nb_exec,running_thread->total_tps_exec,running_thread->total_tps_exec / running_thread->nb_exec);
 #endif
 
   //run le premier de la fifo
