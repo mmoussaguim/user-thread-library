@@ -1,4 +1,6 @@
 *reflechir a comment ameliorer la performance du programme (fibo -> ~32)
-*améliorer le test de la preemption (afficher le temps d'éxécution de haque thread par exemple)
+(notemment masquer et demasquer les signaux prend trop de temps 
+*!!! améliorer le test de la preemption (afficher le temps d'éxécution de chaque thread par exemple) !!!
 *makefile: mkdir build
+*make check
 *rapport
