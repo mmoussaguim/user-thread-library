@@ -24,7 +24,7 @@ Les commandes pour utiliser le projet depuis sa racine sont:
  - Compiler le projet: `make`
  - Nettoyer le répertoire: `make clean`
 
-###Tests
+### Tests
 
 - Pour lancer tous les tests: `make test`
 - Pour lancer tous les tests avec valgrind: `make test-valgrind` (attention, cela peut prendre du temps, particulièrement pour le test de fibonacci)
